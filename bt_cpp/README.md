@@ -30,14 +30,14 @@ I also cloned and built these public repo (some of them may be not relevant for 
 - [cola2_stonefish](https://bitbucket.org/iquarobotics/cola2_stonefish.git)
 - [girona1000_description](https://bitbucket.org/udg_cirs/girona1000_description.git)
 - [girona_utils](https://github.com/GitSRealpe/girona_utils.git)
-- [stonefish](https://github.com/patrykcieslak/stonefish.git)
+- [stonefish]([https://github.com/patrykcieslak/stonefish.git](https://github.com/Michele1996/stonefish/tree/vlc))
 - [stonefish_ros] (https://github.com/patrykcieslak/stonefish.git)
 
 Please take a look to the folder `other_repo_modification` to substitute the relative file in the other repo involved in this use case.
 
 
 ## For users
-- add/remove the BT in `bt_cpp/bt_xml` file following the convenctions
+- add/remove the BT in `bt_cpp/bt_xml` file following the conventions
 
 ## For developers
 * create the node in the `bt_cpp/nodes` folder
