@@ -1,0 +1,74 @@
+graph:
+  - subject: AUV
+    target: DepthCamera
+    action: has
+  - subject: DepthCamera
+    target: clearWater
+    action: can be used in
+  - subject: DepthCamera
+    target: ManipTarget
+    action: generate
+  - subject: DepthCamera
+    target: TouchTarget
+    action: generate
+  - subject: ManipTarget
+    target: Target
+    action: is
+  - subject: TouchTarget
+    target: Target
+    action: is
+  - subject: DepthCamera
+    target: Target
+    action: can observe
+  - subject: AUV
+    target: Arm
+    action: has
+  - subject: Touch
+    target: TouchTarget
+    action: needs
+  - subject: Manipulation
+    target: ManipTarget
+    action: needs
+  - subject: Arm
+    target: Manipulation
+    action: allows
+  - subject: Arm
+    target: Touch
+    action: allows
+  - subject: Sonar
+    target: turbidWater
+    action: can be used in
+  - subject: AUV
+    target: Sonar
+    action: has
+  - subject: AUV
+    target: Battery
+    action: has
+  - subject: Battery
+    target: Sensor
+    action: has energy for
+  - subject: Battery
+    target: Thrusters
+    action: has energy for
+  - subject: Thrusters
+    target: Motion
+    action: allows
+  - subject: AUV
+    target: Thrusters
+    action: has
+  - subject: Battery
+    target: Arm
+    action: has energy for
+  - subject: DepthCamera
+    target: Sensor
+    action: is
+  - subject: Sonar
+    target: Sensor
+    action: is
+  - subject: Sonar
+    target: Survey
+    action: allows
+  - subject: DepthCamera
+    target: Survey
+    action: allows
+
