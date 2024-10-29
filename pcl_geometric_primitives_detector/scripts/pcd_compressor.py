@@ -97,10 +97,8 @@ class MyOpen3DNode:
         if distance > visibility_threshold:
             return False
 
-        # Check orientation (assuming you want to check if they are facing each other)
-        # Here we could use the yaw (the third element of Euler angles) for simplification.
         yaw1 = euler1[2]  # Z-axis rotation for luma_girona
-        yaw2 = euler2[2]  # Z-axis rotation for luma_robot
+        yaw2 = euler2[2]  # Z-axis rotation for luma_computer
 
         # Check if the angles of both modems are approximately aligned
         angle_diff = abs(yaw1 - yaw2)
