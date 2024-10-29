@@ -45,7 +45,7 @@ class MyOpen3DNode:
             (trans2, rot2) = self.tf_listener.lookupTransform('base_link', 'luma_computer', rospy.Time(0))
 
             optical_modem_tf_1 = np.array(trans1)  # Position of luma_girona
-            optical_modem_tf_2 = np.array(trans2)  # Position of luma_robot
+            optical_modem_tf_2 = np.array(trans2)  # Position of luma_computer
 
             # Convert rotation (quaternion) to Euler angles
             euler1 = euler_from_quaternion(rot1)
