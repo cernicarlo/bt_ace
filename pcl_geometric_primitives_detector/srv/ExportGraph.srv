@@ -1,0 +1,6 @@
+# Export affordance graph request
+string filename  # Filename to export the affordance graph to
+
+---
+bool success      # Indicates whether the export operation succeeded
+
