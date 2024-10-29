@@ -1,0 +1,19 @@
+<root BTCPP_format="4">
+    <BehaviorTree ID="main_bt">
+        <Sequence name="iauv_girona1000_survey_scan">
+            <PathRequest type="scan" survey_type="{survey_type}"/>
+            <ReactiveSequence>
+                <Fallback>
+                    <isPathClear/>
+                    <Sequence name="iauv_girona1000_survey_circular">    
+                        <PathRequest type="circular" survey_type="{survey_type}"/>
+                        <ReactiveSequence>
+                            <Inspect inspection_is_completed="true" survey_type="{survey_type}"/>
+                        </ReactiveSequence>
+                    </Sequence>
+                </Fallback>
+                <Inspect inspection_is_completed="true" survey_type="{survey_type}"/>
+            </ReactiveSequence>
+        </Sequence>
+    </BehaviorTree>
+</root>

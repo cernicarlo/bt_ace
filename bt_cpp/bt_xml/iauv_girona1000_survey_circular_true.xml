@@ -1,0 +1,11 @@
+<root BTCPP_format="4">
+    <BehaviorTree ID="main_bt">
+        <Sequence name="iauv_girona1000_survey">
+            <PathRequest type="circular" survey_type="{survey_type}"/>
+            <ReactiveSequence>
+                <isPathClear/>
+                <Inspect inspection_is_completed="true" survey_type="{survey_type}"/>
+            </ReactiveSequence>
+        </Sequence>
+    </BehaviorTree>
+</root>

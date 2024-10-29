@@ -1,4 +1,10 @@
 # BT ACE
+check each packages
 
-# TODO:
-- import bt here
+# TODO
+
+## BT
+- adjust condition isPathClear
+- test whole path
+- write nodes for welcoming clustering scripts
+- write nodes to interact with outside

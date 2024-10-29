@@ -1,0 +1,73 @@
+#include "behaviortree_cpp/bt_factory.h"
+#include "bt_cpp/inspect_node.h"
+#include "bt_cpp/path_request_node.h"
+#include "bt_cpp/is_path_clear_node.h"
+#include <fstream>
+#include <iostream>
+using namespace BT;
+
+template <typename NodeType>
+void registerCustomNode(BT::BehaviorTreeFactory& factory,
+                        const std::string& registration_id,
+                        ros::NodeHandle& nh) {
+   // Use the registration_id directly as the type identifier
+   BT::NodeBuilder builder = [&nh](
+                                 const std::string& name,
+                                 const BT::NodeConfig& config) {
+      return std::make_unique<NodeType>(nh, name, config);
+   };
+
+   // Assuming you directly use the registration_id as the manifest type
+   factory.registerBuilder<NodeType>(registration_id, builder);
+}
+
+int main(int argc, char** argv)
+{
+  ros::init(argc, argv, "bt_cpp_node");
+
+  std::string abs_repo_path = "/home/ros/catkin_ws/src/";
+  std::string relative_xml_fold_path = "bt_ace/bt_cpp/bt_xml/";
+  std::string xml_tree = "iauv_girona1000_survey_scan.xml";
+  // BehaviorTreeFactory factory;
+
+  std::unique_ptr<BT::BehaviorTreeFactory> factory;
+  std::string path;
+  ros::NodeHandle nh;
+  // path = "/home/ros/catkin_ws/src/bt_ace/bt_cpp/bt_xml/iauv_girona1000_survey_circular_true.xml";
+  path = abs_repo_path + relative_xml_fold_path + xml_tree;
+  
+  factory = std::make_unique<BT::BehaviorTreeFactory>();
+  
+  // iauv girona1000 survey
+  registerCustomNode<IauvGirona1000Survey::PathRequest>(
+      *factory, "PathRequest", nh);
+
+
+  registerCustomNode<IauvGirona1000Survey::isPathClear>(
+      *factory, "isPathClear", nh);
+
+
+  registerCustomNode<IauvGirona1000Survey::Inspect>(
+      *factory, "Inspect", nh);
+   
+  
+  // factory.registerNodeType<SaySomething>("SaySomething");
+  // factory.registerNodeType<ThinkWhatToSay>("ThinkWhatToSay");
+
+  // Parse the XML file and create a tree_ from it
+  factory->registerBehaviorTreeFromFile(path);
+  std::unique_ptr<BT::Tree> tree;
+  std::string bt_id = "main_bt";
+  tree = std::make_unique<BT::Tree>(
+       factory->createTree(bt_id));
+  
+  BT::NodeStatus status = BT::NodeStatus::IDLE;
+  while (status != BT::NodeStatus::SUCCESS &&
+          status != BT::NodeStatus::FAILURE && ros::ok()) {
+    status = tree->tickOnce();      // Tick the tree once
+    ros::spinOnce();       // Process ROS callbacks
+    // loop_rate.sleep();     // Sleep to maintain loop rate
+  }
+
+  return 0;
+}
