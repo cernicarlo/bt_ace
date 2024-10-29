@@ -6,11 +6,18 @@ import numpy as np
 from scipy.spatial import Delaunay
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import Header
+from sensor_msgs.msg import PointField
 import struct
+import tf
+from tf import TransformListener
+from tf.transformations import euler_from_quaternion
 
 class MyOpen3DNode:
     def __init__(self):
         rospy.init_node('my_open3d_node', anonymous=True)
+
+        # Initialize a TF listener to get the transforms
+        self.tf_listener = TransformListener()
 
         # Subscriber to get the incoming PointCloud2 messages
         self.subscription = rospy.Subscriber(
@@ -22,7 +29,7 @@ class MyOpen3DNode:
 
         # Publisher to send the reconstructed PointCloud2 messages
         self.publisher = rospy.Publisher(
-            'compressed_cloud',  # Output topic name
+            'luma_computer/compressed_cloud',  # Output topic name
             PointCloud2,
             queue_size=10
         )
@@ -30,30 +37,77 @@ class MyOpen3DNode:
         rospy.spin()
 
     def point_cloud_callback(self, msg):
-        # Step 1: Convert PointCloud2 to Open3D PointCloud
-        point_cloud = self.pointcloud2_to_open3d(msg)
+        try:
+            # Lookup the transformation for the optical modems
+            self.tf_listener.waitForTransform('base_link', 'luma_girona', rospy.Time(0), rospy.Duration(4.0))
+            (trans1, rot1) = self.tf_listener.lookupTransform('base_link', 'luma_girona', rospy.Time(0))
+            self.tf_listener.waitForTransform('base_link', 'luma_computer', rospy.Time(0), rospy.Duration(4.0))
+            (trans2, rot2) = self.tf_listener.lookupTransform('base_link', 'luma_computer', rospy.Time(0))
 
-        # Step 2: Calculate normals for the point cloud
-        point_cloud_with_normals = self.calculate_normals(point_cloud)
+            optical_modem_tf_1 = np.array(trans1)  # Position of luma_girona
+            optical_modem_tf_2 = np.array(trans2)  # Position of luma_robot
 
-        # Step 3: Convert point cloud to mesh using Delaunay triangulation
-        mesh = self.point_cloud_to_mesh(point_cloud_with_normals)
+            # Convert rotation (quaternion) to Euler angles
+            euler1 = euler_from_quaternion(rot1)
+            euler2 = euler_from_quaternion(rot2)
 
-        # Step 4: Clean up the mesh by removing long edges
-        distance_threshold = 0.02  # Adjust this value based on your data
-        cleaned_mesh = self.clean_mesh(mesh, distance_threshold)
+            # Example water condition value; replace this with actual data
+            water_condition = 0.5  # Placeholder for water condition value (between 0 and 1)
 
-        # Step 5: Compress the mesh (quadric edge collapse simplification)
-        simplified_mesh = self.compress_mesh(cleaned_mesh, target_triangle_count=200)
+            # Check line of sight before processing point cloud
+            if self.check_line_of_sight(optical_modem_tf_1, optical_modem_tf_2, euler1, euler2, water_condition):
+                # Step 1: Convert PointCloud2 to Open3D PointCloud
+                point_cloud = self.pointcloud2_to_open3d(msg)
 
-        # Step 6: Reconstruct point cloud from compressed mesh
-        reconstructed_point_cloud = self.mesh_to_point_cloud(simplified_mesh)
+                # Step 2: Calculate normals for the point cloud
+                point_cloud_with_normals = self.calculate_normals(point_cloud)
 
-        # Step 7: Convert Open3D PointCloud back to PointCloud2
-        output_msg = self.open3d_to_pointcloud2(reconstructed_point_cloud, msg.header)
+                # Step 3: Convert point cloud to mesh using Delaunay triangulation
+                mesh = self.point_cloud_to_mesh(point_cloud_with_normals)
 
-        # Publish the reconstructed point cloud
-        self.publisher.publish(output_msg)
+                # Step 4: Clean up the mesh by removing long edges
+                distance_threshold = 0.02  # Adjust this value based on your data
+                cleaned_mesh = self.clean_mesh(mesh, distance_threshold)
+
+                # Step 5: Compress the mesh (quadric edge collapse simplification)
+                simplified_mesh = self.compress_mesh(cleaned_mesh, target_triangle_count=200)
+
+                # Step 6: Reconstruct point cloud from compressed mesh
+                reconstructed_point_cloud = self.mesh_to_point_cloud(simplified_mesh)
+
+                # Step 7: Convert Open3D PointCloud back to PointCloud2
+                output_msg = self.open3d_to_pointcloud2(reconstructed_point_cloud, msg.header)
+
+                # Publish the reconstructed point cloud
+                self.publisher.publish(output_msg)
+            else:
+                rospy.loginfo("Optical modems cannot see each other. Point cloud processing skipped.")
+
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
+            rospy.logerr(f"TF lookup error: {e}")
+
+    def check_line_of_sight(self, modem1_pos, modem2_pos, euler1, euler2, water_condition):
+        # Calculate the distance between the two modems
+        distance = np.linalg.norm(modem1_pos - modem2_pos)
+
+        # Determine visibility threshold based on water condition
+        visibility_threshold = 10.0 * (1 - water_condition)  # Example: max distance decreases as water condition increases
+
+        # Check if distance is within the visibility threshold
+        if distance > visibility_threshold:
+            return False
+
+        # Check orientation (assuming you want to check if they are facing each other)
+        # Here we could use the yaw (the third element of Euler angles) for simplification.
+        yaw1 = euler1[2]  # Z-axis rotation for luma_girona
+        yaw2 = euler2[2]  # Z-axis rotation for luma_robot
+
+        # Check if the angles of both modems are approximately aligned
+        angle_diff = abs(yaw1 - yaw2)
+        if angle_diff > np.pi / 4:  # For example, 45 degrees
+            return False
+
+        return True
 
     def calculate_normals(self, point_cloud):
         point_cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.01, max_nn=30))
