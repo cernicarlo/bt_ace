@@ -2,10 +2,14 @@
 
 import rospy
 import numpy as np
-from pcl_geometric_primitives_detector.msg import ClusterObjInfo
+from bt_policy.msg import LabeledObjInfo
 from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, Marker
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 from std_msgs.msg import Header
+import os
+import sensor_msgs.point_cloud2 as pc2
+from sensor_msgs.msg import PointCloud2
+from groq import Groq
 
 # Global variables
 server = None
@@ -13,13 +17,35 @@ menu_handlers = {}
 h_first_entry = 0
 h_mode_last = 0
 
-def clustered_obj_callback(msg):
+
+client = Groq(
+
+    api_key='',
+
+)
+
+
+
+def pointcloud_to_list(cloud_msg):
+    """
+    Convert a sensor_msgs/PointCloud2 message to a list of points.
+    Each point is represented as a tuple (x, y, z).
+    """
+    points = []
+    
+    # Extract points from the PointCloud2 message
+    for point in pc2.read_points(cloud_msg, field_names=("x", "y", "z"), skip_nans=True):
+        points.append((point[0], point[1], point[2]))  # Append each point (x, y, z) as a tuple
+    
+    return points
+
+def label_obj_callback(msg):
     global server
 
     # Extract object information from the message
-    cluster_id = msg.cluster_id
+    cluster_label = msg.label
     cluster_point_cloud = msg.point_cloud  # Assuming the message contains a PointCloud2
-    points = convert_pointcloud_to_array(cluster_point_cloud)  # Convert PointCloud2 to a NumPy array
+    points = pointcloud_to_list(cluster_point_cloud)  # Convert PointCloud2 to a NumPy array
 
     # Calculate the centroid of the cluster's point cloud
     centroid = calculate_centroid(points)
@@ -35,7 +61,7 @@ def clustered_obj_callback(msg):
         makeMenuMarker(marker_name, points)
 
         # Initialize a unique menu for the marker
-        initMenu(menu_handlers[marker_name])
+        initMenu(menu_handlers[marker_name], label)
     
     # Apply the marker-specific menu handler
     menu_handlers[marker_name].apply(server, marker_name)
@@ -86,9 +112,55 @@ def makeMenuMarker(name, points):
 
     server.insert(int_marker)
 
-def initMenu(menu):
-    # Add entries to the menu handler
-    entry_handle = menu.insert("Sample Entry", callback=enableCb)
+def enableCb(feedback):
+    """handle = feedback.menu_entry_id
+    state = menu_handler.getCheckState(handle)
+
+    if state == MenuHandler.CHECKED:
+        menu_handler.setCheckState(handle, MenuHandler.UNCHECKED)
+        node.get_logger().info('Hiding first menu entry')
+        menu_handler.setVisible(h_first_entry, False)
+    else:
+        menu_handler.setCheckState(handle, MenuHandler.CHECKED)
+        node.get_logger().info('Showing first menu entry')
+        menu_handler.setVisible(h_first_entry, True)
+
+    menu_handler.reApply(server)
+    server.applyChanges()
+    """
+
+def initMenu(menu, label):
+    # Add the last entry with two sentences
+    chat_completion = client.chat.completions.create(
+
+    messages=[
+
+        {
+
+            "role": "user",
+
+            "content": "what's a "+label+"?",
+
+        }
+
+    ],
+
+    model="llama3-8b-8192",
+
+    )
+
+    # Sample text from chat completion
+    ai_generated_text = chat_completion.choices[0].message.content
+
+    # Split the text into words
+    words = ai_generated_text.split()
+
+    # Create entries for the menu handler
+    for i in range(0, len(words), 5):
+        # Join the next 10 words and create a menu entry
+        entry = ' '.join(words[i:i + 5]).replace("...**Cut**...","").replace("**","")
+        # Insert each entry into the menu handler
+        last_entry_handle = menu.insert(entry, callback=enableCb)
 
 def calculate_centroid(points):
     if len(points) == 0:
@@ -104,16 +176,11 @@ def main():
     rospy.init_node('menu', anonymous=True)
     server = InteractiveMarkerServer("menu")
 
-    # Initialize menu handlers
-    menu_handlers = {}
-
-    # Set up the subscriber in ROS 1 style
-    rospy.Subscriber('clustered_obj_info', ClusterObjInfo, clustered_obj_callback)
+    menu_handlers = {}  # Initialize menu handlers
+    node.create_subscription(LabeledObjInfo, 'labeled_cloud', labeled_obj_callback, 10)
 
     rospy.spin()
-    server.clear()
-    server.applyChanges()
-
+    server.shutdown()
 
 if __name__ == '__main__':
     main()

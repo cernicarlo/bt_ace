@@ -27,6 +27,7 @@
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <utility>
+#include <bt_policy/ClusterObjInfo.h>
 
 
 typedef pcl::PointXYZ PointT;
@@ -468,7 +469,7 @@ class PrimitiveDetectionNode {
 public:
     PrimitiveDetectionNode(ros::NodeHandle& nh) {
         // Initialize the subscriber
-        subscription_ = nh.subscribe("input_point_cloud", 10, &PrimitiveDetectionNode::pointCloudCallback, this);
+        subscription_ = nh.subscribe("clustered_point_cloud", 10, &PrimitiveDetectionNode::pointCloudCallback, this);
         
         // Initialize the publishers
         planes_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("planes", 10);
@@ -481,11 +482,11 @@ public:
     }
 
 private:
-    void pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg)
+    void pointCloudCallback(const bt_policy::ClusterObjInfo::ConstPtr& msg)
     {
         // Convert PointCloud2 to PCL point cloud
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
-        pcl::fromROSMsg(*msg, *cloud);
+        pcl::fromROSMsg(*msg.clustered_pointcloud, *cloud);
 
         // Detect planes and get their inliers
         auto [planes_cloud, planes_fitness_score] = primitive_detector_->detectPlanes(cloud);
@@ -494,28 +495,28 @@ private:
         auto [cones_cloud, cones_fitness_score] = primitive_detector_->detectCones(cloud);
 
         // Publish detected planes as a new PointCloud2 message
-        sensor_msgs::PointCloud2 output_planes_msg;
+        sensor_msgs::msg::PointCloud2 output_planes_msg;
         pcl::toROSMsg(*planes_cloud, output_planes_msg);
         output_planes_msg.header.frame_id = msg->header.frame_id;  // Set the frame ID to match the input
-        planes_publisher_.publish(output_planes_msg);
+        planes_publisher_->publish(output_planes_msg);
 
         // Publish detected spheres as a new PointCloud2 message
-        sensor_msgs::PointCloud2 output_spheres_msg;
+        sensor_msgs::msg::PointCloud2 output_spheres_msg;
         pcl::toROSMsg(*spheres_cloud, output_spheres_msg);
         output_spheres_msg.header.frame_id = msg->header.frame_id;  // Set the frame ID to match the input
-        spheres_publisher_.publish(output_spheres_msg);
+        spheres_publisher_->publish(output_spheres_msg);
 
         // Publish detected cylinders as a new PointCloud2 message
-        sensor_msgs::PointCloud2 output_cylinders_msg;
+        sensor_msgs::msg::PointCloud2 output_cylinders_msg;
         pcl::toROSMsg(*cylinders_cloud, output_cylinders_msg);
         output_cylinders_msg.header.frame_id = msg->header.frame_id;  // Set the frame ID to match the input
-        cylinders_publisher_.publish(output_cylinders_msg);
+        cylinders_publisher_->publish(output_cylinders_msg);
 
         // Publish detected cylinders as a new PointCloud2 message
-        sensor_msgs::PointCloud2 output_cone_msg;
+        sensor_msgs::msg::PointCloud2 output_cone_msg;
         pcl::toROSMsg(*cones_cloud, output_cone_msg);
         output_cone_msg.header.frame_id = msg->header.frame_id;  // Set the frame ID to match the input
-        cones_publisher_.publish(output_cone_msg);
+        cones_publisher_->publish(output_cone_msg);
 
         // Print fitness scores
         std::cout << "Total Fitness Score for Planes: " << planes_fitness_score << std::endl;

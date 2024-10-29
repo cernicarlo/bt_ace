@@ -1,10 +1,7 @@
-#!/usr/bin/env python
-
-
 import rospy
 from sensor_msgs.msg import PointCloud2
-from pcl_geometric_primitives_detector.srv import Cluster, ClusterResponse
-from pcl_geometric_primitives_detector.msg import ClusterObjInfo
+from cola2_stonefish.srv import Cluster, ClusterResponse
+from cola2_stonefish.msg import ClusterObjInfo
 import sensor_msgs.point_cloud2 as pc2
 import numpy as np
 from sklearn.cluster import KMeans
@@ -134,7 +131,7 @@ def tf_broadcast(point, frame_id):
     tf_broadcaster.sendTransform(tf_msg)
 
 def publish_object_info(object_info_list):
-    object_info_pub = rospy.Publisher('object_info', ClusterObjInfo, queue_size=10)
+    object_info_pub = rospy.Publisher('clustered_point_cloud', ClusterObjInfo, queue_size=10)
     rate = rospy.Rate(10)  # 10 Hz
 
     for object_info in object_info_list:
@@ -143,7 +140,7 @@ def publish_object_info(object_info_list):
 
 def clustering_server():
     rospy.init_node('ACE_clustering_server') 
-    rospy.Subscriber('/octomap_point_cloud_centers', PointCloud2, octomap_callback)
+    rospy.Subscriber('/voxel_grid/output', PointCloud2, octomap_callback)
     s = rospy.Service('cluster', Cluster, handle_cluster)
     print("Ready to cluster.")
     rospy.spin()
