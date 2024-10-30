@@ -18,6 +18,10 @@ ros package to run PCL
 ```
 * install groq (`pip install groq`)
 * install graphviz (`pip install graphviz`)
+* install open3d (`pip install open3d`)
+* install open3d (`pip install yaml`)
+* install open3d (`pip install tkinter`)
+```
 
 
 
