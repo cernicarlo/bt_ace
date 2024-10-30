@@ -16,4 +16,6 @@ ros package to run PCL
  make -j10
  sudo make -j10 install
 ```
+* install groq (`pip install groq`)
+* install graphviz (`pip install graphviz`)
 

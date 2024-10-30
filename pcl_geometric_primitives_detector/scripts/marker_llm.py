@@ -2,7 +2,7 @@
 
 import rospy
 import numpy as np
-from bt_policy.msg import LabeledObjInfo
+from pcl_geometric_primitives_detector.msg import LabeledObjInfo
 from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, Marker
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 from std_msgs.msg import Header

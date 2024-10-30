@@ -17,6 +17,7 @@ find_package(PCL 1.14 REQUIRED COMPONENTS common filters segmentation visualizat
 add_message_files(
         FILES
         ClusterObjInfo.msg
+        LabeledObjInfo.msg
       )
 
 add_service_files(

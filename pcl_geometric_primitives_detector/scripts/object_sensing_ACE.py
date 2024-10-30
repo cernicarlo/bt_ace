@@ -1,7 +1,7 @@
 import rospy
 from sensor_msgs.msg import PointCloud2
-from cola2_stonefish.srv import Cluster, ClusterResponse
-from cola2_stonefish.msg import ClusterObjInfo
+from pcl_geometric_primitives_detector.srv import Cluster, ClusterResponse
+from pcl_geometric_primitives_detector.msg import ClusterObjInfo
 import sensor_msgs.point_cloud2 as pc2
 import numpy as np
 from sklearn.cluster import KMeans
