@@ -42,7 +42,7 @@ I also cloned and built these public repo (some of them may be not relevant for 
 - [girona1000_description](https://bitbucket.org/udg_cirs/girona1000_description.git)
 - [girona_utils](https://github.com/GitSRealpe/girona_utils.git)
 - [stonefish](https://github.com/Michele1996/stonefish/tree/vlc_dev)
-- [stonefish_ros] (https://github.com/Michele1996/stonefish_ros)
+- [stonefish_ros](https://github.com/Michele1996/stonefish_ros)
 
 Please take a look to the folder `other_repo_modification` to substitute the relative file in the other repo involved in this use case.
 
