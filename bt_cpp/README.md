@@ -85,6 +85,14 @@ marker_llm.py
 object_sensing_ACE.py
 pcd_compressor.py
 ```
+### PCD Compressor
+The script checks if the TFs of the two vlc are seeing each other and if the distance is short enough (depending on the water quality). In the positive case, it gets the PointCloud2 message from "/girona1000/depth_cam/pointcloud", compresses and publishes it to "/luma_station/compressed_cloud".
+
+### ObjectSensing
+This script does clustering of the PointCloud2 received from the topic "/luma_station/compressed_cloud".
+It uses the silhouette score to compute the best number of clusters and then applies K-Means Cluster to compute them. 
+It then computes for each cluster its centroid and a surface point and publishes it as ClusterObjInfo message to "/clustered_point_cloud"
+
 ### MarkerLLM
 The scripts use Groq as LLM
 ```bash
@@ -96,9 +104,4 @@ client = Groq(
 ```
 You need to create an api key. Check https://console.groq.com/keys
 
-The node subscribes to the "/labeled_cloud" topic and gets LabeledObjInfo msg which contains the label, the pointcloud, its centroid and a surface point
-
-### ObjectSensing
-This script does clustering of the PointCloud2 received from the topic "/luma_station/compressed_cloud".
-It uses the silhouette score to compute the best number of clusters and then applies K-Means Cluster to compute them. 
-It then computes for each cluster its centroid and a surface point and publishes it as ClusterObjInfo message to "/clustered_point_cloud"
+The node subscribes to the "/labeled_cloud" topic and gets LabeledObjInfo msg which contains the label, the PointCloud2, its centroid and a surface point
