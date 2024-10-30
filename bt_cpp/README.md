@@ -96,6 +96,17 @@ marker_llm.py
 object_sensing_ACE.py
 pcd_compressor.py
 ```
+The launch file also creates the following parameters containing the mission, graph and taxonomy files
+```bash
+mission_file
+affordance_graph
+taxonomy
+```
+Don't forget to add "/" in the scripts or cpp code to access them like:
+```python
+mission_file = rospy.get_param('/mission_file')
+```
+
 ### PCD Compressor
 The script checks if the TFs of the two vlc are seeing each other and if the distance is short enough (depending on the water quality). In the positive case, it gets the PointCloud2 message from "/girona1000/depth_cam/pointcloud", compresses and publishes it to "/luma_station/compressed_cloud".
 
