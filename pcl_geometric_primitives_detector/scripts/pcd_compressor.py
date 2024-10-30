@@ -29,7 +29,7 @@ class MyOpen3DNode:
 
         # Publisher to send the reconstructed PointCloud2 messages
         self.publisher = rospy.Publisher(
-            'luma_station/compressed_cloud',  # Output topic name
+            '/luma_station/compressed_cloud',  # Output topic name
             PointCloud2,
             queue_size=10
         )

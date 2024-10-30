@@ -15,20 +15,20 @@ import geometry_msgs.msg
 from sensor_msgs.msg import PointCloud2, PointField
 import std_msgs.msg
 
-octomap_data = None
+pcd_data = None
 
-def octomap_callback(msg):
-    global octomap_data
+def pointcloud_callback(msg):
+    global pcd_data
     points = np.array(list(pc2.read_points(msg, skip_nans=True)))
-    octomap_data = points
-    rospy.loginfo("Received octomap data.")
+    pcd_data = points
+    rospy.loginfo("Received PointCloud data.")
 
 def handle_cluster(req):
-    global octomap_data
-    if octomap_data is None:
-        return ClusterResponse(success=False, message="Octomap data not available.")
+    global pcd_data
+    if pcd_data is None:
+        return ClusterResponse(success=False, message="PointCloud data not available.")
     
-    points = octomap_data
+    points = pcd_data
     optimal_clusters = find_optimal_clusters(points)
     kmeans = KMeans(n_clusters=optimal_clusters)
     kmeans.fit(points)
@@ -134,7 +134,7 @@ def tf_broadcast(point, frame_id):
     tf_broadcaster.sendTransform(tf_msg)
 
 def publish_object_info(object_info_list):
-    object_info_pub = rospy.Publisher('clustered_point_cloud', ClusterObjInfo, queue_size=10)
+    object_info_pub = rospy.Publisher('/clustered_point_cloud', ClusterObjInfo, queue_size=10)
     rate = rospy.Rate(10)  # 10 Hz
 
     for object_info in object_info_list:
@@ -143,7 +143,7 @@ def publish_object_info(object_info_list):
 
 def clustering_server():
     rospy.init_node('ACE_clustering_server') 
-    rospy.Subscriber('/voxel_grid/output', PointCloud2, octomap_callback)
+    rospy.Subscriber('/luma_station/compressed_cloud', PointCloud2, pointcloud_callback)
     s = rospy.Service('cluster', Cluster, handle_cluster)
     print("Ready to cluster.")
     rospy.spin()
