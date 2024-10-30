@@ -85,3 +85,15 @@ marker_llm.py
 object_sensing_ACE.py
 pcd_compressor.py
 ```
+## MarkerLLM
+The scripts use Groq as LLM
+```bash
+client = Groq(
+
+    api_key='',
+
+)
+```
+You need to create an api key. Check https://console.groq.com/keys \n
+The node subscribes the "labeled_cloud" topic and get LabeledObjInfo msg which contain the label, the pointcloud, its centroid and a surface point
+
