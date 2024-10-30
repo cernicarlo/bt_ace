@@ -19,3 +19,44 @@ ros package to run PCL
 * install groq (`pip install groq`)
 * install graphviz (`pip install graphviz`)
 
+
+
+## Perception and Knowledge Representation Scripts
+The launch file perception.launch in the launch folder runs the following scripts:
+```bash
+affordanceGraphN.py
+marker_llm.py
+object_sensing_ACE.py
+pcd_compressor.py
+```
+The launch file also creates the following parameters containing the mission, graph and taxonomy files
+```bash
+mission_file
+affordance_graph
+taxonomy
+```
+Don't forget to add "/" in the scripts or cpp code to access them like:
+```python
+mission_file = rospy.get_param('/mission_file')
+```
+
+### PCD Compressor
+The script checks if the TFs of the two vlc are seeing each other and if the distance is short enough (depending on the water quality). In the positive case, it gets the PointCloud2 message from "/girona1000/depth_cam/pointcloud", compresses and publishes it to "/luma_station/compressed_cloud".
+
+### ObjectSensing
+This script does clustering of the PointCloud2 received from the topic "/luma_station/compressed_cloud".
+It uses the silhouette score to compute the best number of clusters and then applies K-Means Cluster to compute them. 
+It then computes for each cluster its centroid and a surface point and publishes it as [ClusterObjInfo](https://github.com/cernicarlo/bt_ace/blob/master/pcl_geometric_primitives_detector/msg/ClusterObjInfo.msg) message to "/clustered_point_cloud"
+
+### MarkerLLM
+The scripts use Groq as LLM
+```bash
+client = Groq(
+
+    api_key='',
+
+)
+```
+You need to create an api key. Check https://console.groq.com/keys
+
+The node subscribes to the "/labeled_cloud" topic and gets [LabeledObjInfo](https://github.com/cernicarlo/bt_ace/blob/master/pcl_geometric_primitives_detector/msg/LabeledObjInfo.msg) msg which contains the label, the PointCloud2, its centroid and a surface point
