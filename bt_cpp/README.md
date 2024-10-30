@@ -3,7 +3,7 @@ This project is inspired by [btcpp_sample](https://github.com/BehaviorTree/btcpp
 
 The **CMakeLists.txt** and **package.xml** files are compatible with both ROS and ROS2.
 
-## Python Requirements
+## Python and ROS Requirements
 For the perception and knowledge part, you need to have: 
 ```
 groq
@@ -12,7 +12,7 @@ tkinter
 yaml
 graphviz
 ```
-Then the [interactive markers](http://wiki.ros.org/interactive_markers)
+Then you need also the [interactive markers](http://wiki.ros.org/interactive_markers)
 
 ## Installation
 - Once you install ROS Noetic, create a workspace (eg. `~/catkin_ws`) following ROS instructions for ws creation (either `catkin_make` or -the one I used - `catkin init`)
