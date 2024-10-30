@@ -6,6 +6,7 @@
 #include <ros/ros.h>
 #include <iostream>
 #include <sstream>
+#include <chrono>
 
 
 #include "iauv_motion_planner/GetPath.h"
@@ -24,29 +25,27 @@
 namespace IauvGirona1000Survey {
 
 
-class isPathClear : public BT::CoroActionNode
+class isPathClear : public BT::ConditionNode
 {
 public:
-    isPathClear(ros::NodeHandle& nh, const std::string& name, const BT::NodeConfig& config)
-        : CoroActionNode(name, config), 
-       nh_(nh),  
+    isPathClear(const std::string& name, const BT::NodeConfig& config)
+        : BT::ConditionNode(name, config),
        is_object_detected_(false), 
        survey_type_(SCAN)
     {
-        
         object_pose_sub_ = nh_.subscribe("/object_pose", 10, &isPathClear::objectPoseCallback, this);
     }
     // BT::NodeStatus onStart();
     // BT::NodeStatus onRunning();
-
-    static BT::PortsList providedPorts() {
-        return {}; // No ports
+    static BT::PortsList providedPorts()
+    {
+        return {};
     }
     
 
 private:
     // Tick function that checks the condition
-    BT::NodeStatus tick() override final;
+    BT::NodeStatus tick() override;
 
     // Callback function for the subscriber
     void objectPoseCallback(const geometry_msgs::PointStamped::ConstPtr& msg);

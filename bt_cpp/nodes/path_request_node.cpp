@@ -126,12 +126,14 @@ BT::NodeStatus PathRequest::onStart() {
       param.key = "length";
       param.value = "5";
       _request.params.push_back(param);
+      ROS_INFO("setting path scan");
       setOutput("survey_type", "scan");
    } else if (_type == "circular") {
        _request.planner = iauv_motion_planner::GetPathRequest::CIRCULAR;
        param.key = "radius";
        param.value = "4";
        _request.params.push_back(param);
+       ROS_INFO("setting path circular");
        setOutput("survey_type", "circular");
    } else {
       ROS_ERROR("the type %s is not supported", _type.c_str());

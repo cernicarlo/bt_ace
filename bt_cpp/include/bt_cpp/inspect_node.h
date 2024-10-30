@@ -41,6 +41,7 @@ class Inspect : public BT::CoroActionNode {
 
    BT::NodeStatus onStart();
    BT::NodeStatus onRunning();
+   BT::NodeStatus isPathClear();
    void sendFollowPathGoal();
    void minimalDoneCallback(
        const actionlib::SimpleClientGoalState& state,

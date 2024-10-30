@@ -87,7 +87,7 @@ void Inspect::objectPoseCallback(const geometry_msgs::PointStamped::ConstPtr& ms
       if (!std::isnan(msg->point.x)){
          is_object_detected_ = true;
          log << "Received object position - x: " << msg->point.x << ", y: " << msg->point.y << ", z: " << msg->point.z;
-         printIfFromLastPrintHavePassedSomeSeconds(log.str(), 1.0);
+         // printIfFromLastPrintHavePassedSomeSeconds(log.str(), 1.0);
       } else {
          is_object_detected_ = false;
       }
@@ -96,6 +96,16 @@ void Inspect::objectPoseCallback(const geometry_msgs::PointStamped::ConstPtr& ms
 }
 
 
+BT::NodeStatus Inspect::isPathClear(){
+   if (is_object_detected_){
+      ROS_WARN("detected object");
+      return BT::NodeStatus::FAILURE;
+   };
+   // nothing detected, all clear
+   return BT::NodeStatus::SUCCESS;
+
+
+};
 
 bool Inspect::hasEnoughTimePassed(double seconds) {
    auto now = std::chrono::steady_clock::now();

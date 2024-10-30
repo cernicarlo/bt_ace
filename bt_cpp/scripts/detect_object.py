@@ -59,9 +59,9 @@ def publish_object_position(is_condition_achieved):
 
 def is_auv_close_to_object(odom_msg):
     # FIXME: this is a mock, only working with priviledged info!
-    tol_x = 5 # adjust to 3
-    tol_y = 5
-    tol_z = 5
+    tol_x = 15 # adjust to 3
+    tol_y = 15
+    tol_z = 15
     tol_yaw = 0.5
     relative_path_orientation = 0.7
 
@@ -77,6 +77,7 @@ def odom_callback(msg):
     condition = is_auv_close_to_object(msg)
     if condition:
         rospy.loginfo(f"AUV in x={msg.pose.pose.position.x}, y={msg.pose.pose.position.y}, z={msg.pose.pose.position.z} close to object!")
+        # TODO: publish only if auv started path (waypoint >= 2)
         publish_object_position(condition)
 
 def pointcloud_listener():
