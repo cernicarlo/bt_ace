@@ -77,7 +77,7 @@ T5
 # bt client
 ```
 
-### Perception and Knowledge Representation Scripts
+## Perception and Knowledge Representation Scripts
 The launch file perception.launch in the launch folder runs the following scripts:
 ```bash
 affordanceGraphN.py
@@ -85,7 +85,7 @@ marker_llm.py
 object_sensing_ACE.py
 pcd_compressor.py
 ```
-## MarkerLLM
+### MarkerLLM
 The scripts use Groq as LLM
 ```bash
 client = Groq(
@@ -96,5 +96,6 @@ client = Groq(
 ```
 You need to create an api key. Check https://console.groq.com/keys
 
-The node subscribes the "labeled_cloud" topic and get LabeledObjInfo msg which contain the label, the pointcloud, its centroid and a surface point
+The node subscribes to the "/labeled_cloud" topic and gets LabeledObjInfo msg which contains the label, the pointcloud, its centroid and a surface point
+
 
