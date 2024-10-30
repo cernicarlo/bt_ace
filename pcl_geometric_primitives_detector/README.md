@@ -40,6 +40,13 @@ Don't forget to add "/" in the scripts or cpp code to access them like:
 ```python
 mission_file = rospy.get_param('/mission_file')
 ```
+### Knowledge Graph
+The affordanceGraphN script creates the graph based on the affordance_graph.yaml file. 
+It has:
+*  a service called validate_mission, that takes in input the mission file in the ros_param and checks if the mission is possible (it returns True or False)
+*  a service called display_graph which displays the actual graph
+*  a service called display_gui which allows a user to add an object and new affordances (object, action) in the graph
+*  a service called query which checks the relation between nodes in the graph as triplet (subject, target, action) ex. (StereoPair, Survey, allows) 
 
 ### PCD Compressor
 The script checks if the TFs of the two vlc are seeing each other and if the distance is short enough (depending on the water quality). In the positive case, it gets the PointCloud2 message from "/girona1000/depth_cam/pointcloud", compresses and publishes it to "/luma_station/compressed_cloud".
