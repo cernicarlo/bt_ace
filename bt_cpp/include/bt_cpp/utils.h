@@ -9,4 +9,10 @@ enum SurveyType
     CIRCULAR = 2  // 2 represents circular
 };
 
+// Custom type
+struct Pose3D
+{
+    double x, y, z;
+};
+
 }

@@ -8,7 +8,24 @@ namespace IauvGirona1000Survey {
 void PathRequest::construction() {
    name_ = "PathRequest";
    if (!getInput<std::string>("type", _type)) {
-      throw BT::RuntimeError("missing required input [what]");
+      throw BT::RuntimeError("missing required input [type]");
+   }
+   if (!getInput<Pose3D>("start", _start)) {
+      throw BT::RuntimeError("missing required input [start]");
+   }
+   if (!getInput<Pose3D>("goal", _goal)) {
+      throw BT::RuntimeError("missing required input [goal]");
+   }
+   
+   
+   if (!getInput<std::string>("length", _length)) {
+      throw BT::RuntimeError("missing required input [length]");
+   }
+   if (!getInput<std::string>("width", _width)) {
+      throw BT::RuntimeError("missing required input [width]");
+   }
+   if (!getInput<std::string>("radius", _radius)) {
+      throw BT::RuntimeError("missing required input [radius]");
    }
    object_pose_sub_ = nh_.subscribe("/object_pose", 10, &PathRequest::objectPoseCallback, this);
    std::cout << "Construction of " << name_ << std::endl;
@@ -25,9 +42,9 @@ void PathRequest::objectPoseCallback(const geometry_msgs::PointStamped::ConstPtr
       std::stringstream log;
       log << "PatRequest - " <<_type << ": ";
       // object_pose_cv_.notify_one();
-      _request.start.position.x = 3.0;
-      _request.start.position.y = 3.0;
-      _request.start.position.z = 5;
+      _request.start.position.x = _start.x; //3.0
+      _request.start.position.y = _start.y; //3.0
+      _request.start.position.z = _start.z; //5.0
       _request.start.orientation.w = 1;
       log << " start position - set; ";
       if (!std::isnan(msg->point.x)){
@@ -40,9 +57,9 @@ void PathRequest::objectPoseCallback(const geometry_msgs::PointStamped::ConstPtr
          is_object_pose_received_ = true;
       } else {
          log << " [WARNING] object not detected";
-         _request.goal.position.x = 3;
-         _request.goal.position.y = 4;
-         _request.goal.position.z = 3;
+         _request.goal.position.x = _goal.x; //3.0
+         _request.goal.position.y = _goal.y; //4.0
+         _request.goal.position.z = _goal.z; //3.0
          
       }
       _request.goal.orientation.w = 1;
@@ -108,30 +125,30 @@ BT::NodeStatus PathRequest::onStart() {
    if (_type == "scan"){
        
       // TODO: pass start and goal request from outside
-      _request.start.position.x = -4;
-      _request.start.position.y = -4;
-      _request.start.position.z = 5;
+      _request.start.position.x = _start.x; //-4.0
+      _request.start.position.y = _start.y; //-4.0
+      _request.start.position.z = _start.z; //5.0
       _request.start.orientation.w = 1;
 
-      _request.goal.position.x = 0;
-      _request.goal.position.y = 0;
-      _request.goal.position.z = 3;
+      _request.goal.position.x = _goal.x; //0.0
+      _request.goal.position.y = _goal.y; //0.0
+      _request.goal.position.z = _goal.z; //3.0
       _request.goal.orientation.w = 1;
       _request.goal.orientation.z = 0;
 
       _request.planner = iauv_motion_planner::GetPathRequest::SCANNER;
       param.key = "width";
-      param.value = "7";
+      param.value = _width;//"7";
       _request.params.push_back(param);
       param.key = "length";
-      param.value = "5";
+      param.value = _length;//"5";
       _request.params.push_back(param);
       ROS_INFO("setting path scan");
       setOutput("survey_type", "scan");
    } else if (_type == "circular") {
        _request.planner = iauv_motion_planner::GetPathRequest::CIRCULAR;
        param.key = "radius";
-       param.value = "4";
+       param.value = _radius;//"4";
        _request.params.push_back(param);
        ROS_INFO("setting path circular");
        setOutput("survey_type", "circular");

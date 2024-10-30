@@ -2,10 +2,11 @@
     <BehaviorTree ID="main_bt">
         <Sequence name="iauv_girona1000_survey_scan">
             <LogSequence name="start"    message="mission start" />
+            <!-- Main Path -->
+            <PathRequest name="main_path" type="scan" start="-2.5;-2.0;5.5" goal="0.0;3.0;3.0" width="10.0" length="5.0" radius="0.0" survey_type="{survey_type}"/>
             <RetryUntilSuccessful num_attempts="5">
                 <Sequence name="ScanLoop">
                     <LogSequence name="SetScanPath" message="Setting scan path"/>
-                    <PathRequest type="scan" survey_type="{survey_type}"/>
                     <Fallback name="CheckAndInspect">
                         <!-- If path is clear, proceed to scan inspection -->
                         <ReactiveSequence name="ScanInspection">
@@ -16,13 +17,16 @@
                         <ForceFailure>
                             <Sequence name="CircularInspection">
                                 <LogSequence name="SetCircularPath" message="Setting circular path"/>
-                                <PathRequest type="circular" survey_type="{survey_type}"/>
+                                <PathRequest type="circular" start="3.0;3.0;5.0" goal="3.0;4.0;3.0" width="0.0" length="0.0" radius="2.0" survey_type="{survey_type}"/>
                                 <Inspect inspection_is_completed="false" survey_type="{survey_type}"/>
+                                <LogSequence name="SetCircularPath" message="Setting manually the path to start from where the object is placed"/>
+                                <PathRequest type="scan" start="3.0;4.0;3.0" goal="0.0;6.0;3.0" width="4.0" length="5.0" radius="0.0" survey_type="{survey_type}"/>
                             </Sequence>
                         </ForceFailure>
                     </Fallback>
                 </Sequence>
             </RetryUntilSuccessful>
+            <LogSequence name="RetryUntilSuccessful" message="RetryUntilSuccessful Success"/>
         </Sequence>
     </BehaviorTree>
 </root>

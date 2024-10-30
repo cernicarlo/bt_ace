@@ -19,6 +19,26 @@
 typedef actionlib::SimpleActionClient<girona_utils::PursuitAction> PursuitClient;
 
 namespace chr = std::chrono;
+namespace BT{
+template <>
+inline IauvGirona1000Survey::Pose3D BT::convertFromString(BT::StringView key)
+{
+  // three real numbers separated by semicolons
+  auto parts = BT::splitString(key, ';');
+  if(parts.size() != 3)
+  {
+    throw BT::RuntimeError("invalid input)");
+  }
+  else
+  {
+    IauvGirona1000Survey::Pose3D output;
+    output.x = BT::convertFromString<float>(parts[0]);
+    output.y = BT::convertFromString<float>(parts[1]);
+    output.z = BT::convertFromString<float>(parts[2]);
+    return output;
+  }
+}
+}
 
 namespace IauvGirona1000Survey {
 
@@ -46,6 +66,11 @@ class PathRequest : public BT::CoroActionNode
     {
         return{ 
          BT::InputPort<std::string>("type"),
+         BT::InputPort<Pose3D>("start"),
+         BT::InputPort<Pose3D>("goal"),
+         BT::InputPort<std::string>("width"),
+         BT::InputPort<std::string>("length"),
+         BT::InputPort<std::string>("radius"),
          BT::OutputPort<std::string>("survey_type")  
          };
     }
@@ -79,6 +104,12 @@ class PathRequest : public BT::CoroActionNode
     int last_idx_waypoint_;
     std::string prev_printed_msg_;
     std::chrono::steady_clock::time_point last_print_time_;
+    Pose3D _goal;
+    Pose3D _start;
+    std::string _width;
+    std::string _length;
+    std::string _radius;
+    std::string _param;
 };
 
 }  // namespace IauvGirona1000Survey
