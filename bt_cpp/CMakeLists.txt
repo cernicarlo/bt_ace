@@ -51,17 +51,19 @@ target_link_libraries(nodes
 find_package(catkin REQUIRED COMPONENTS behaviortree_cpp)
 catkin_package(CATKIN_DEPENDS behaviortree_cpp )
 
-add_executable(bt_cpp src/main.cpp)
-target_include_directories(bt_cpp PRIVATE ${catkin_INCLUDE_DIRS})
-target_link_libraries(bt_cpp ${catkin_LIBRARIES} nodes)
+add_executable(scan_path src/scan_path.cpp)
+target_include_directories(scan_path PRIVATE ${catkin_INCLUDE_DIRS})
+target_link_libraries(scan_path ${catkin_LIBRARIES} nodes)
 
-# Install the target bt_cpp
-install(TARGETS bt_cpp
+add_executable(bt_manager src/bt_manager.cpp)
+target_include_directories(bt_manager PRIVATE ${catkin_INCLUDE_DIRS})
+target_link_libraries(bt_manager ${catkin_LIBRARIES} nodes)
+
+# Install the targets of bt_cpp
+install(TARGETS scan_path bt_manager
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-install(TARGETS bt_cpp
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+
 
 
 catkin_install_python(PROGRAMS
