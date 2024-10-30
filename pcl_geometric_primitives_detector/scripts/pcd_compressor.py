@@ -11,6 +11,7 @@ import struct
 import tf
 from tf import TransformListener
 from tf.transformations import euler_from_quaternion
+from stonefish_ros.msg import SimulationInfo
 
 class MyOpen3DNode:
     def __init__(self):
@@ -33,8 +34,22 @@ class MyOpen3DNode:
             PointCloud2,
             queue_size=10
         )
+        
+        self.simulation_info_subscriber = rospy.Subscriber(
+            '/stonefish_ros/simulation_info_topic',
+            SimulationInfo,  # Adjust to the actual message type
+            self.simulation_info_callback,
+            queue_size=10
+        )
+        
+        self.water_type = 0.2
 
         rospy.spin()
+
+    def simulation_info_callback(self, msg):
+        # Extract the water_type value from the SimulationInfo message
+        self.water_type = msg.water_type
+
 
     def point_cloud_callback(self, msg):
         try:
@@ -51,11 +66,9 @@ class MyOpen3DNode:
             euler1 = euler_from_quaternion(rot1)
             euler2 = euler_from_quaternion(rot2)
 
-            # Example water condition value; replace this with actual data
-            water_condition = 0.5  # Placeholder for water condition value (between 0 and 1)
 
             # Check line of sight before processing point cloud
-            if self.check_line_of_sight(optical_modem_tf_1, optical_modem_tf_2, euler1, euler2, water_condition):
+            if self.check_line_of_sight(optical_modem_tf_1, optical_modem_tf_2, euler1, euler2, self.water_type):
                 # Step 1: Convert PointCloud2 to Open3D PointCloud
                 point_cloud = self.pointcloud2_to_open3d(msg)
 
