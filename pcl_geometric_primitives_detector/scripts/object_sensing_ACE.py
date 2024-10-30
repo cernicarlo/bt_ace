@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+
 import rospy
 from sensor_msgs.msg import PointCloud2
 from pcl_geometric_primitives_detector.srv import Cluster, ClusterResponse

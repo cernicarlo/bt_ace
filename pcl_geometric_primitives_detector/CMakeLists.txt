@@ -74,6 +74,15 @@ install(TARGETS pcl_geometric_primitives_detector
 # Add definitions from PCL if necessary
 add_definitions(${PCL_DEFINITIONS})
 
+
+catkin_install_python(PROGRAMS
+  scripts/affordanceGraphN.py
+  scripts/marker_llm.py
+  scripts/object_sensing_ACE.py
+  scripts/pcd_compressor.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 # Optionally add testing dependencies
 # if(CATKIN_ENABLE_TESTING)
 #   find_package(roscpp_tutorials REQUIRED)

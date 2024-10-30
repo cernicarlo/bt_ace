@@ -177,7 +177,7 @@ def main():
     server = InteractiveMarkerServer("menu")
 
     menu_handlers = {}  # Initialize menu handlers
-    node.create_subscription(LabeledObjInfo, 'labeled_cloud', labeled_obj_callback, 10)
+    rospy.Subscriber(LabeledObjInfo, 'labeled_cloud', labeled_obj_callback, 10)
 
     rospy.spin()
     server.shutdown()

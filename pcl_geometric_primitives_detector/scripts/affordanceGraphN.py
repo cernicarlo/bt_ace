@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+
 import rospy
 from std_srvs.srv import Empty
 import tkinter as tk
@@ -26,7 +29,7 @@ class Graph:
                 return True
         return False
         
-def validate_mission(self, mission_file):
+    def validate_mission(self, mission_file):
         """
         Validates a mission file by checking each action against the affordance graph.
         """
