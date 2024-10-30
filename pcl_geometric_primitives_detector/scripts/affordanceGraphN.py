@@ -52,6 +52,7 @@ def validate_mission(self, mission_file):
                     subject = parts[0]
                     action = "observe"  # Map "look at" to "observe" as per affordance graph terminology
                     target = parts[3]
+                    rospy.set_param('/target', target)
 
                 else:
                     rospy.logerr(f"Invalid mission format: {line}")
