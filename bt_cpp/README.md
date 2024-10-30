@@ -12,6 +12,7 @@ tkinter
 yaml
 graphviz
 ```
+Then the [interactive markers](http://wiki.ros.org/interactive_markers)
 
 ## Installation
 - Once you install ROS Noetic, create a workspace (eg. `~/catkin_ws`) following ROS instructions for ws creation (either `catkin_make` or -the one I used - `catkin init`)
@@ -101,7 +102,7 @@ The script checks if the TFs of the two vlc are seeing each other and if the dis
 ### ObjectSensing
 This script does clustering of the PointCloud2 received from the topic "/luma_station/compressed_cloud".
 It uses the silhouette score to compute the best number of clusters and then applies K-Means Cluster to compute them. 
-It then computes for each cluster its centroid and a surface point and publishes it as ClusterObjInfo message to "/clustered_point_cloud"
+It then computes for each cluster its centroid and a surface point and publishes it as [ClusterObjInfo](https://github.com/cernicarlo/bt_ace/blob/master/pcl_geometric_primitives_detector/msg/ClusterObjInfo.msg) message to "/clustered_point_cloud"
 
 ### MarkerLLM
 The scripts use Groq as LLM
@@ -114,4 +115,4 @@ client = Groq(
 ```
 You need to create an api key. Check https://console.groq.com/keys
 
-The node subscribes to the "/labeled_cloud" topic and gets LabeledObjInfo msg which contains the label, the PointCloud2, its centroid and a surface point
+The node subscribes to the "/labeled_cloud" topic and gets [LabeledObjInfo](https://github.com/cernicarlo/bt_ace/blob/master/pcl_geometric_primitives_detector/msg/LabeledObjInfo.msg) msg which contains the label, the PointCloud2, its centroid and a surface point
