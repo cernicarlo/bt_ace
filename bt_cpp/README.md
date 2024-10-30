@@ -94,6 +94,7 @@ client = Groq(
 
 )
 ```
-You need to create an api key. Check https://console.groq.com/keys \n
+You need to create an api key. Check https://console.groq.com/keys
+
 The node subscribes the "labeled_cloud" topic and get LabeledObjInfo msg which contain the label, the pointcloud, its centroid and a surface point
 
