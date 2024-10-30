@@ -21,7 +21,7 @@ class MyOpen3DNode:
 
         # Subscriber to get the incoming PointCloud2 messages
         self.subscription = rospy.Subscriber(
-            'input_pointcloud',  # Input topic name
+            '/girona1000/depth_cam/pointcloud',  # Input topic name
             PointCloud2,
             self.point_cloud_callback,
             queue_size=10
@@ -39,10 +39,10 @@ class MyOpen3DNode:
     def point_cloud_callback(self, msg):
         try:
             # Lookup the transformation for the optical modems
-            self.tf_listener.waitForTransform('base_link', 'luma_girona', rospy.Time(0), rospy.Duration(4.0))
-            (trans1, rot1) = self.tf_listener.lookupTransform('base_link', 'luma_girona', rospy.Time(0))
-            self.tf_listener.waitForTransform('base_link', 'luma_computer', rospy.Time(0), rospy.Duration(4.0))
-            (trans2, rot2) = self.tf_listener.lookupTransform('base_link', 'luma_computer', rospy.Time(0))
+            self.tf_listener.waitForTransform('girona1000/origin', 'luma_link', rospy.Time(0), rospy.Duration(4.0))
+            (trans1, rot1) = self.tf_listener.lookupTransform('girona1000/origin', 'luma_link', rospy.Time(0))
+            self.tf_listener.waitForTransform('world_ned', 'luma_station', rospy.Time(0), rospy.Duration(4.0))
+            (trans2, rot2) = self.tf_listener.lookupTransform('world_ned', 'luma_station', rospy.Time(0))
 
             optical_modem_tf_1 = np.array(trans1)  # Position of luma_girona
             optical_modem_tf_2 = np.array(trans2)  # Position of luma_computer

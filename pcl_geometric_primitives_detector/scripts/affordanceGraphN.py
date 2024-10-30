@@ -190,7 +190,7 @@ def handle_validate_mission(req, graph):
     Service handler to validate the mission file.
     """
     # Assume mission file path is set as a parameter or hard-coded here
-    mission_file = rospy.get_param('/mission_file', './../../ace/mission.txt')
+    mission_file = ospy.get_param('/mission_file')
     
     rospy.loginfo("Validating mission from file: {}".format(mission_file))
     
@@ -210,7 +210,7 @@ def gui_service(graph):
     rospy.spin()
 
 if __name__ == "__main__":
-    filename = rospy.get_param('/affordance_graph/affordance_graph_filename', './../../ace/affordance_graph.yaml')
+    filename = rospy.get_param('/affordance_graph')
     rospy.loginfo("Using filename: %s", filename)
     print("Filename parameter:", filename)
     graph = Graph.read_graph_from_yaml(filename)
