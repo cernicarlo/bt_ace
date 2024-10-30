@@ -75,5 +75,13 @@ rosrun bt_cpp detect_object.py
 T5
 ```bash
 # bt client
-rosrun bt_cpp bt_cpp
+
+
+### Perception and Knowledge Representation Scripts
+The launch file perception.launch in the launch folder runs the following scripts:
+```bash
+affordanceGraphN.py
+marker_llm.py
+object_sensing_ACE.py
+pcd_compressor.py
 ```
