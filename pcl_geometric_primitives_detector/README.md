@@ -21,9 +21,6 @@ ros package to run PCL
 * install open3d (`pip install open3d`)
 * install open3d (`pip install yaml`)
 * install open3d (`pip install tkinter`)
-```
-
-
 
 ## Perception and Knowledge Representation Scripts
 The launch file perception.launch in the launch folder runs the following scripts:
