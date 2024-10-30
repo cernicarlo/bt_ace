@@ -5,6 +5,7 @@ from tkinter import simpledialog
 import graphviz
 import yaml
 from cola2_stonefish.srv import AddObject, AddAffordance, ExportGraph, CreateGUI, DisplayGraph, DisplayGraphResponse, CheckRelation
+from std_srvs.srv import Trigger, TriggerResponse
 
 class Graph:
     def __init__(self):
@@ -24,6 +25,52 @@ class Graph:
             if subject == edge[0] and target == edge[1] and action == edge[2]:
                 return True
         return False
+        
+def validate_mission(self, mission_file):
+        """
+        Validates a mission file by checking each action against the affordance graph.
+        """
+        try:
+            # Open and read the mission file
+            with open(mission_file, 'r') as file:
+                mission_lines = file.readlines()
+
+            for line in mission_lines:
+                line = line.strip()
+                if not line:
+                    continue
+
+                # Parse each mission line in the format "Subject do Action" or "Subject look at Target"
+                parts = line.split()
+                
+                if len(parts) == 3 and parts[1] == "do":  # Example: "AUV do Survey"
+                    subject = parts[0]
+                    action = parts[2]
+                    target = None
+
+                elif len(parts) == 4 and parts[1] == "look" and parts[2] == "at":  # Example: "AUV look at Sphere"
+                    subject = parts[0]
+                    action = "observe"  # Map "look at" to "observe" as per affordance graph terminology
+                    target = parts[3]
+
+                else:
+                    rospy.logerr(f"Invalid mission format: {line}")
+                    return False
+
+                # Check the required relation in the graph
+                if not self.has_relation(subject, target, action):
+                    rospy.logwarn(f"Mission validation failed: '{subject} {action} {target}' is not possible.")
+                    return False
+
+            rospy.loginfo("Mission validated successfully!")
+            return True
+
+        except FileNotFoundError:
+            rospy.logerr("Mission file not found: {}".format(mission_file))
+            return False
+        except Exception as e:
+            rospy.logerr("Error validating mission file: {}".format(e))
+            return False
     
     @classmethod
     def read_graph_from_yaml(cls, file_path):
@@ -133,12 +180,28 @@ def handle_export_graph(req, graph):
     except Exception as e:
         rospy.logerr("Failed to handle export graph service request: {}".format(e))
         return ExportGraphResponse(success=False)
+
+def handle_validate_mission(req, graph):
+    """
+    Service handler to validate the mission file.
+    """
+    # Assume mission file path is set as a parameter or hard-coded here
+    mission_file = rospy.get_param('/mission_file', './../../ace/mission.txt')
+    
+    rospy.loginfo("Validating mission from file: {}".format(mission_file))
+    
+    if graph.validate_mission(mission_file):
+        return TriggerResponse(success=True, message="Mission validated successfully. All requirements met.")
+    else:
+        return TriggerResponse(success=False, message="Mission validation failed. Requirements not met.")
+   
     
 def gui_service(graph):
     rospy.init_node("affordance_graph") 
     rospy.Service('display_gui', Empty, lambda req: handle_gui_request(req, graph))
     rospy.Service("display_graph", DisplayGraph, lambda req: handle_display_graph(req, graph))
     rospy.Service("query", CheckRelation, lambda req: handle_check_relation(req, graph))
+    rospy.Service("validate_mission", Trigger, lambda req: handle_validate_mission(req, graph))
     rospy.loginfo("GUI service is ready.")
     rospy.spin()
 
