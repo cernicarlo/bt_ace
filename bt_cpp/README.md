@@ -99,4 +99,6 @@ You need to create an api key. Check https://console.groq.com/keys
 The node subscribes to the "/labeled_cloud" topic and gets LabeledObjInfo msg which contains the label, the pointcloud, its centroid and a surface point
 
 ### ObjectSensing
-This script does clustering of the PointCloud2 received from the topic "/luma_station/compressed_cloud" . It uses the silhouette score to compute the best number of clusters and then applies K-Means Cluster to compute them. It then computes for each cluster its centroid and a surface point and publishes it as ClusterObjInfo message to "/clustered_point_cloud"
+This script does clustering of the PointCloud2 received from the topic "/luma_station/compressed_cloud".
+It uses the silhouette score to compute the best number of clusters and then applies K-Means Cluster to compute them. 
+It then computes for each cluster its centroid and a surface point and publishes it as ClusterObjInfo message to "/clustered_point_cloud"
