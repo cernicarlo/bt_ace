@@ -3,6 +3,16 @@ This project is inspired by [btcpp_sample](https://github.com/BehaviorTree/btcpp
 
 The **CMakeLists.txt** and **package.xml** files are compatible with both ROS and ROS2.
 
+## Python Requirements
+For the perception and knowledge part, you need to have: 
+```
+groq
+open3d
+tkinter
+yaml
+graphviz
+```
+
 ## Installation
 - Once you install ROS Noetic, create a workspace (eg. `~/catkin_ws`) following ROS instructions for ws creation (either `catkin_make` or -the one I used - `catkin init`)
 - clone [BehaviorTree.CPP](https://github.com/BehaviorTree/BehaviorTree.CPP) (last time I checked, it was using this [commit](https://github.com/BehaviorTree/BehaviorTree.CPP/commit/1fcb624d4d7b9d1f357378b20ff19bdcc3853cea)) in `src` (eg. `~/catkin_ws/src`)
