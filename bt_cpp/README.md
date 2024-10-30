@@ -3,17 +3,6 @@ This project is inspired by [btcpp_sample](https://github.com/BehaviorTree/btcpp
 
 The **CMakeLists.txt** and **package.xml** files are compatible with both ROS and ROS2.
 
-## Python and ROS Requirements
-For the perception and knowledge part, you need to have: 
-```
-groq
-open3d
-tkinter
-yaml
-graphviz
-```
-Then you need also the [interactive markers](http://wiki.ros.org/interactive_markers)
-
 ## Installation
 - Once you install ROS Noetic, create a workspace (eg. `~/catkin_ws`) following ROS instructions for ws creation (either `catkin_make` or -the one I used - `catkin init`)
 - clone [BehaviorTree.CPP](https://github.com/BehaviorTree/BehaviorTree.CPP) (last time I checked, it was using this [commit](https://github.com/BehaviorTree/BehaviorTree.CPP/commit/1fcb624d4d7b9d1f357378b20ff19bdcc3853cea)) in `src` (eg. `~/catkin_ws/src`)
@@ -43,8 +32,9 @@ I also cloned and built these public repo (some of them may be not relevant for 
 - [girona_utils](https://github.com/GitSRealpe/girona_utils.git)
 - [stonefish](https://github.com/Michele1996/stonefish/tree/vlc_dev)
 - [stonefish_ros](https://github.com/Michele1996/stonefish_ros)
+- [interactive markers](https://github.com/ros-visualization/interactive_markers)
 
-Please take a look to the folder `other_repo_modification` to substitute the relative file in the other repo involved in this use case.
+Please take a look at the folder `other_repo_modification` to substitute the relative file in the other repo involved in this use case.
 
 
 ## For users
