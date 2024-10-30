@@ -1,10 +1,10 @@
 <root BTCPP_format="4">
     <BehaviorTree ID="main_bt">
         <Sequence name="iauv_girona1000_survey_scan">
-            <SaySomething2 name="start"    message="mission start" />
+            <LogSequence name="start"    message="mission start" />
             <RetryUntilSuccessful num_attempts="5">
                 <Sequence name="ScanLoop">
-                    <SaySomething2 name="SetScanPath" message="Setting scan path"/>
+                    <LogSequence name="SetScanPath" message="Setting scan path"/>
                     <PathRequest type="scan" survey_type="{survey_type}"/>
                     <Fallback name="CheckAndInspect">
                         <!-- If path is clear, proceed to scan inspection -->
@@ -15,7 +15,7 @@
                         <!-- If path is not clear, perform circular inspection and retry -->
                         <ForceFailure>
                             <Sequence name="CircularInspection">
-                                <SaySomething2 name="SetCircularPath" message="Setting circular path"/>
+                                <LogSequence name="SetCircularPath" message="Setting circular path"/>
                                 <PathRequest type="circular" survey_type="{survey_type}"/>
                                 <Inspect inspection_is_completed="false" survey_type="{survey_type}"/>
                             </Sequence>
