@@ -28,7 +28,7 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <utility>
 #include <pcl_geometric_primitives_detector/ClusterObjInfo.h>
-
+#include <pcl_geometric_primitives_detector/LabeledObjInfo.h>
 
 typedef pcl::PointXYZ PointT;
 
@@ -277,7 +277,11 @@ std::pair<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, double> detectPlanes(const pcl
         plane_count++;  // Increment the plane counter
     }
 
-    return {colored_planes_cloud, total_fitness_score}; // Return colored planes and total fitness score
+    string label = "";
+    if(plane_count==6){
+       label="box";
+    }
+    return {colored_planes_cloud, total_fitness_score,label}; // Return colored planes and total fitness score
 }
 
 
@@ -464,13 +468,14 @@ class PrimitiveDetectionNode {
 public:
     PrimitiveDetectionNode(ros::NodeHandle& nh) {
         // Initialize the subscriber
-        subscription_ = nh.subscribe("clustered_point_cloud", 10, &PrimitiveDetectionNode::pointCloudCallback, this);
+        subscription_ = nh.subscribe("/clustered_point_cloud", 10, &PrimitiveDetectionNode::pointCloudCallback, this);
         
         // Initialize the publishers
         planes_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("planes", 10);
         spheres_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("spheres", 10);
         cylinders_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("cylinders", 10);
         cones_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("cones", 10);
+        labeled_obj_info_pub_ = nh.advertise<pcl_geometric_primitives_detector::LabeledObjInfo>("/labeled_obj_info",10);
         
         // Initialize the primitive detector
         primitive_detector_ = std::make_shared<PrimitiveDetector>();
@@ -484,7 +489,7 @@ private:
         pcl::fromROSMsg(msg->clustered_pointcloud, *cloud);
 
         // Detect planes and get their inliers
-        auto [planes_cloud, planes_fitness_score] = primitive_detector_->detectPlanes(cloud);
+        auto [planes_cloud, planes_fitness_score,p_label] = primitive_detector_->detectPlanes(cloud);
         auto [spheres_cloud, spheres_fitness_score] = primitive_detector_->detectSpheres(cloud);
         auto [cylinders_cloud, cylinders_fitness_score] = primitive_detector_->detectCylinders(cloud);
         auto [cones_cloud, cones_fitness_score] = primitive_detector_->detectCones(cloud);
@@ -512,12 +517,38 @@ private:
         pcl::toROSMsg(*cones_cloud, output_cone_msg);
         output_cone_msg.header.frame_id = msg->clustered_pointcloud.header.frame_id;  // Set the frame ID to match the input
         cones_publisher_.publish(output_cone_msg);
+        
+        pcl_geometric_primitives_detector::LabeledObjInfo labeled_obj_msg;
+        labeled_obj_msg.clustered_pointcloud=msg->clustered_pointcloud;
+        labeled_obj_msg.centroid=msg->centroid;
+        labeled_obj_msg.surface_point=msg->surface_point;
+        
+        
 
         // Print fitness scores
         std::cout << "Total Fitness Score for Planes: " << planes_fitness_score << std::endl;
         std::cout << "Fitness Score for Spheres: " << spheres_fitness_score << std::endl;
         std::cout << "Fitness Score for Cylinders: " << cylinders_fitness_score << std::endl;
         std::cout << "Fitness Score for Cones: " << cones_fitness_score << std::endl;
+        
+    double lowest_score = std::min({planes_fitness_score, spheres_fitness_score, cylinders_fitness_score, cones_fitness_score});
+    
+    // Determine the label for the lowest score
+    std::string lowest_score_label;
+    if (lowest_score == planes_fitness_score) {
+        lowest_score_label = "Plane";
+        if(p_label=="box")
+           lowest_score_label="box";
+    } else if (lowest_score == spheres_fitness_score) {
+        lowest_score_label = "Sphere";
+    } else if (lowest_score == cylinders_fitness_score) {
+        lowest_score_label = "Cylinder";
+    } else if (lowest_score == cones_fitness_score) {
+        lowest_score_label = "Cone";
+    }
+    
+    labeled_obj_msg.label=lowest_score_label;
+
     }
 
 
@@ -526,6 +557,7 @@ private:
     ros::Publisher spheres_publisher_;
     ros::Publisher cylinders_publisher_;
     ros::Publisher cones_publisher_;
+    ros::Publisher labeled_obj_info_pub_;
     std::shared_ptr<PrimitiveDetector> primitive_detector_;
 };
 

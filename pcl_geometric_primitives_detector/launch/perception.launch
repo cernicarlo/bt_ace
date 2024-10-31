@@ -14,7 +14,10 @@
 
     <!-- Run object_sensing_ACE.py -->
     <node name="object_sensing_ace_node" pkg="pcl_geometric_primitives_detector" type="object_sensing_ACE.py" output="screen" />
-
+   
+       <!-- Run operator_label_2_obj_label.py -->
+    <node name="operator_label_2_obj_label" pkg="pcl_geometric_primitives_detector" type="operator_label_2_obj_label.py" output="screen" /> 
+    
     <!-- Run pcd_compressor.py -->
     <node name="pcd_compressor_node" pkg="pcl_geometric_primitives_detector" type="pcd_compressor.py" output="screen" />
 </launch>
