@@ -51,17 +51,17 @@ def label_obj_callback(msg):
     centroid = calculate_centroid(points)
 
     # Marker name
-    marker_name = f'marker_{cluster_id}'
+    marker_name = f'marker_{cluster_label}'
     
     # Create or update the marker
     if server.get(marker_name):
-        rospy.loginfo(f'Updating marker for cluster {cluster_id}')
+        rospy.loginfo(f'Updating marker for cluster {cluster_label}')
     else:
-        rospy.loginfo(f'Creating new marker for cluster {cluster_id}')
+        rospy.loginfo(f'Creating new marker for cluster {cluster_label}')
         makeMenuMarker(marker_name, points)
 
         # Initialize a unique menu for the marker
-        initMenu(menu_handlers[marker_name], label)
+        initMenu(menu_handlers[marker_name], cluster_label)
     
     # Apply the marker-specific menu handler
     menu_handlers[marker_name].apply(server, marker_name)
@@ -177,7 +177,7 @@ def main():
     server = InteractiveMarkerServer("menu")
 
     menu_handlers = {}  # Initialize menu handlers
-    rospy.Subscriber(LabeledObjInfo, '/labeled_cloud', label_obj_callback, 10)
+    rospy.Subscriber('/labeled_cloud', LabeledObjInfo, label_obj_callback, queue_size=10)
 
     rospy.spin()
     server.shutdown()

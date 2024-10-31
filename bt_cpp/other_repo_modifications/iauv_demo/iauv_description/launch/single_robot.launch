@@ -1,0 +1,104 @@
+<launch>
+    <!-- Configurable arguments -->
+    <arg name="robot_name" default="girona1000"/>
+
+    <arg name="enable_keyboard" default="false"/>
+    <arg name="enable_joystick" default="false"/>
+    <arg name="joystick_device" default="/dev/input/js0"/>
+    <arg name="enable_gui" default="true"/>
+    <arg name="enable_rviz" default="true"/>
+
+    <!-- Simulation parameters -->
+    <arg name="simulation_data" value="$(find iauv_description)/resources"/>
+    <arg name="scenario_description"
+        value="$(find iauv_description)/scenarios/single_robot_scenario.scn"/>
+    <arg name="simulation_rate" value="100.0"/>
+    <arg name="graphics_resolution" value="1440 900"/>
+    <arg name="graphics_quality" value="low"/>
+
+    <!-- Static transform -->
+    <node name="world2ned" pkg="tf2_ros" type="static_transform_publisher"
+        args="0 0 0 0 0 3.1415 world world_ned"/>
+
+    <include file="$(find iauv_description)/launch/utils/depth_cam.launch"/>
+
+    <!-- Run Simulator -->
+    <node name="stonefish_simulator" pkg="stonefish_ros" type="parsed_simulator"
+        args="$(arg simulation_data) $(arg scenario_description)
+                  $(arg simulation_rate) $(arg graphics_resolution) 
+                  $(arg graphics_quality)">
+        <remap from="girona1000/bravo/joint_states" to="girona1000/joint_states"/>
+        <remap from="robot_description" to="girona1000/robot_description"/>
+    </node>
+
+    <!-- Namespace with robot name -->
+    <group ns="$(arg robot_name)">
+
+        <!-- Architecture -->
+        <include file="$(find iauv_description)/launch/core/girona1000_base.launch.core">
+            <arg name="robot_name" value="$(arg robot_name)"/>
+            <arg name="enable_gui" value="$(arg enable_gui)"/>
+        </include>
+
+        <!-- keep the robot in place for simulation -->
+        <rosparam param="controller/enable_thrusters">true</rosparam>
+
+        <!-- Joystick -->
+        <group if="$(arg enable_joystick)">
+            <node name="joystick" pkg="joy" type="joy_node">
+                <param name="dev" value="$(arg joystick_device)"/>
+                <param name="dev_ff" value=""/>
+                <param name="deadzone" value="0.05"/>
+            </node>
+            <node name="fx10_to_teleoperation" pkg="cola2_control"
+                type="logitech_fx10_to_teleoperation_node.py"/>
+        </group>
+
+        <!-- Load robot description -->
+        <param name="robot_description"
+            command="$(find xacro)/xacro '$(find iauv_description)/urdf/g1000_bravo.urdf.xacro' 
+                        robot_namespace:=$(arg robot_name)"/>
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+            output="screen"/>
+
+
+        <!-- ROS Control -->
+        <group ns="bravo">
+            <!-- Load ros-control parameters -->
+            <rosparam command="load"
+                file="$(find iauv_description)/config/ros_control/bravo_ros_control.yaml"/>
+            <!-- Load the controllers -->
+            <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen"
+                args="joint_state_controller joint_trajectory_controller finger_small_position_controller finger_large_position_controller"/>
+            <!-- Launch the predefined motions node-->
+            <!-- <node name="predefined_motions" pkg="iauv_description"
+                type="predefined_positions" output="screen">
+                <rosparam command="load"
+                    file="$(find iauv_description)/config/predefined_motions/bravo.yaml"/>
+            </node> -->
+        </group>
+    </group>
+
+    <!-- Stonefish/COLA2 message translator -->
+    <node name="translator" pkg="cola2_stonefish" type="cola2_stonefish_node">
+        <remap from="/translator/stonefish_dvl" to="/$(arg robot_name)/navigator/dvl_sim"/>
+        <remap from="/translator/cola2_dvl" to="/$(arg robot_name)/navigator/dvl"/>
+        <remap from="/translator/stonefish_thruster_setpoints"
+            to="/$(arg robot_name)/controller/thruster_setpoints_sim"/>
+        <remap from="/translator/cola2_thruster_setpoints"
+            to="/$(arg robot_name)/controller/thruster_setpoints"/>
+        <remap from="/translator/stonefish_navigation"
+            to="/$(arg robot_name)/navigator/navigation_sim"/>
+        <remap from="/translator/cola2_navigation" to="/$(arg robot_name)/navigator/navigation"/>
+    </node>
+    <node name="odom_to_tf" pkg="iauv_description" type="odom_to_tf.py" output="screen">
+        <param name="name" value="$(arg robot_name)"/>
+    </node>
+
+    <!-- dummy node to fold the manipulators -->
+    <!-- <node name="start_arms_folded" pkg="iauv_description" type="fold_arms.sh"/> -->
+
+    <!-- RViz -->
+    <node if="$(arg enable_rviz)" pkg="rviz" type="rviz" name="rviz"
+        args="-d $(find iauv_description)/config/viz.rviz"/>
+</launch>

@@ -54,8 +54,8 @@ class MyOpen3DNode:
     def point_cloud_callback(self, msg):
         try:
             # Lookup the transformation for the optical modems
-            self.tf_listener.waitForTransform('girona1000/origin', 'luma_link', rospy.Time(0), rospy.Duration(4.0))
-            (trans1, rot1) = self.tf_listener.lookupTransform('girona1000/origin', 'luma_link', rospy.Time(0))
+            self.tf_listener.waitForTransform('girona1000/origin', 'girona1000/luma_link', rospy.Time(0), rospy.Duration(4.0))
+            (trans1, rot1) = self.tf_listener.lookupTransform('girona1000/origin', 'girona1000/luma_link', rospy.Time(0))
             self.tf_listener.waitForTransform('world_ned', 'luma_station', rospy.Time(0), rospy.Duration(4.0))
             (trans2, rot2) = self.tf_listener.lookupTransform('world_ned', 'luma_station', rospy.Time(0))
 

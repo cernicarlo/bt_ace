@@ -66,14 +66,14 @@ T3
 roslaunch girona_utils auv_pose_controller.launch robot:=girona1000
 ```
 
-T4
+<!-- T4
 ```bash
 # start the node that will detect the object (at this point, it uses priviledged info - TODO: make it real)
 rosrun bt_cpp detect_object.py
-```
+``` -->
 
 
 T5
 ```bash
-# bt client
+rosrun bt_cpp scan_path
 ```

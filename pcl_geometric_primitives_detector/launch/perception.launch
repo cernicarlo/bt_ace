@@ -1,9 +1,9 @@
 <launch>
     <!-- Set the mission_file parameter -->
     <param name="mission_file" value="$(find pcl_geometric_primitives_detector)/ace/mission.txt" />
-    <!-- Set affordance graph file parameter
+    <!-- Set affordance graph file parameter -->
     <param name="affordance_graph" value="$(find pcl_geometric_primitives_detector)/ace/affordance_graph.yaml" />
-    <!-- Set taxonomy file parameter
+    <!-- Set taxonomy file parameter -->
     <param name="taxonomy" value="$(find pcl_geometric_primitives_detector)/ace/primitive_taxonomy.yaml" />
 
     <!-- Run affordanceGraphN.py -->

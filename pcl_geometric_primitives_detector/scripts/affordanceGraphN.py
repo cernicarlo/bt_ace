@@ -319,6 +319,6 @@ if __name__ == "__main__":
     rospy.loginfo("Using filename: %s", filename)
     print("Filename parameter:", filename)
     graph = Graph.read_graph_from_yaml(filename)
-    taxonomy = load_taxonomy(taxonomy_file)
+    taxonomy = load_taxonomy(taxonomy_filename)
     gui_service(graph)
 

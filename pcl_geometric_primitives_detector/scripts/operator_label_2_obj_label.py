@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
-import rclpy
-from rclpy.node import Node
+import rospy
 import numpy as np
 from sensor_msgs.msg import PointCloud2, PointField
 from geometry_msgs.msg import Point
@@ -29,20 +28,13 @@ def calculate_surface_point(cluster_points):
     ], axis=0)
     return surface_point
 
-class LabeledPointCloudConverter(Node):
+class LabeledPointCloudConverter:
     def __init__(self):
-        super().__init__('labeled_pointcloud_converter')
-        
         # Subscriber to /labeled_clouds
-        self.subscription = self.create_subscription(
-            LabeledPointCloud2,
-            '/labeled_clouds',
-            self.callback,
-            10
-        )
+        self.subscription = rospy.Subscriber('/labeled_clouds', LabeledPointCloud2, self.callback, queue_size=10)
         
         # Publisher for the converted LabeledObjInfo topic
-        self.publisher = self.create_publisher(LabeledObjInfo, '/labeled_obj_info', 10)
+        self.publisher = rospy.Publisher('/labeled_obj_info', LabeledObjInfo, queue_size=10)
 
     def callback(self, msg):
         # Parse the input message LabeledPointCloud2
@@ -78,15 +70,9 @@ class LabeledPointCloudConverter(Node):
         self.publisher.publish(labeled_obj_info)
 
 def main(args=None):
-    rclpy.init(args=args)
+    rospy.init_node('labeled_pointcloud_converter')
     node = LabeledPointCloudConverter()
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        node.destroy_node()
-        rclpy.shutdown()
+    rospy.spin()
 
 if __name__ == '__main__':
     main()

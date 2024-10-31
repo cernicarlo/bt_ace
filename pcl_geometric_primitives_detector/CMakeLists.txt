@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(pcl_geometric_primitives_detector)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
@@ -80,6 +81,7 @@ catkin_install_python(PROGRAMS
   scripts/affordanceGraphN.py
   scripts/marker_llm.py
   scripts/object_sensing_ACE.py
+  scripts/operator_label_2_obj_label.py
   scripts/pcd_compressor.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

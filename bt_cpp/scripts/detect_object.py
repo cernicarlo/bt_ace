@@ -6,9 +6,16 @@ from nav_msgs.msg import Odometry
 import sensor_msgs.point_cloud2 as pc2
 
 # FIXME: the whole script is just for proof of concept
-obj_position_x = 3
-obj_position_y = 4
-obj_position_z = 3
+
+# Sphere
+# obj_position_x = 3.0
+# obj_position_y = 4.0
+# obj_position_z = 3.0
+
+# LUMA station
+obj_position_x = -10.0
+obj_position_y = 5.0
+obj_position_z = 6.4
 
 pos_auv_close_obj_x = 0 # adjust to 0
 pos_auv_close_obj_y = 0
@@ -62,7 +69,7 @@ def is_auv_close_to_object(odom_msg):
     tol_x = 15 # adjust to 3
     tol_y = 15
     tol_z = 15
-    tol_yaw = 0.5
+    tol_yaw = 10
     relative_path_orientation = 0.7
 
     is_x_close = abs(odom_msg.pose.pose.position.x - pos_auv_close_obj_x) < tol_x

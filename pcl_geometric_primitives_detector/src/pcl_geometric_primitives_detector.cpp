@@ -206,7 +206,7 @@ double pointToConeDistance(const pcl::PointXYZ& point, const pcl::ModelCoefficie
 
 
     // Iteratively fit planes and return the inliers for publishing
-std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, double> detectPlanes(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud)
+std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, double, std::string> detectPlanes(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud)
 {
     pcl::PointCloud<pcl::PointXYZ>::Ptr remaining_cloud = downsample(cloud);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_planes_cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
@@ -277,7 +277,7 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, double> detectPlanes(const pc
         plane_count++;  // Increment the plane counter
     }
 
-    string label = "";
+    std::string label = "";
     if(plane_count==6){
        label="box";
     }
@@ -531,8 +531,10 @@ private:
         std::cout << "Fitness Score for Cylinders: " << cylinders_fitness_score << std::endl;
         std::cout << "Fitness Score for Cones: " << cones_fitness_score << std::endl;
         
-    double lowest_score = std::min({planes_fitness_score, spheres_fitness_score, cylinders_fitness_score, cones_fitness_score});
-    
+    // double lowest_score = std::min({planes_fitness_score, spheres_fitness_score, cylinders_fitness_score, cones_fitness_score});
+    std::array<double, 4> scores = {planes_fitness_score, spheres_fitness_score, cylinders_fitness_score, cones_fitness_score};
+    double lowest_score = *std::min_element(scores.begin(), scores.end());
+
     // Determine the label for the lowest score
     std::string lowest_score_label;
     if (lowest_score == planes_fitness_score) {
