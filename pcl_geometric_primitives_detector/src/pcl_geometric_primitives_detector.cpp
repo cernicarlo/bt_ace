@@ -206,7 +206,7 @@ double pointToConeDistance(const pcl::PointXYZ& point, const pcl::ModelCoefficie
 
 
     // Iteratively fit planes and return the inliers for publishing
-std::pair<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, double> detectPlanes(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud)
+std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, double> detectPlanes(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud)
 {
     pcl::PointCloud<pcl::PointXYZ>::Ptr remaining_cloud = downsample(cloud);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_planes_cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
@@ -281,7 +281,7 @@ std::pair<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, double> detectPlanes(const pcl
     if(plane_count==6){
        label="box";
     }
-    return {colored_planes_cloud, total_fitness_score,label}; // Return colored planes and total fitness score
+    return std::make_tuple(colored_planes_cloud, total_fitness_score, label); // Return triplet
 }
 
 
