@@ -90,7 +90,8 @@ def handle_cluster(req):
     cluster_response.success = True
     cluster_response.message = "Clustering completed successfully."
     cluster_response.points = centroids
-
+ 
+    print("Number of clusters:",optimal_clusters)
     print("Type of cluster_response.points:", type(cluster_response.points))
     print("Contents of cluster_response.points:", cluster_response.points)
     return cluster_response.success, cluster_response.message, cluster_response.points
