@@ -8,14 +8,14 @@ import sensor_msgs.point_cloud2 as pc2
 # FIXME: the whole script is just for proof of concept
 
 # Sphere
-# obj_position_x = 3.0
-# obj_position_y = 4.0
-# obj_position_z = 3.0
+obj_position_x = 3.0
+obj_position_y = 4.0
+obj_position_z = 5.0
 
 # LUMA station
-obj_position_x = -10.0
-obj_position_y = 5.0
-obj_position_z = 6.4
+# obj_position_x = -10.0
+# obj_position_y = 5.0
+# obj_position_z = 6.4
 
 pos_auv_close_obj_x = 0 # adjust to 0
 pos_auv_close_obj_y = 0

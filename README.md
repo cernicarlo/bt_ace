@@ -6,6 +6,13 @@ Repo for automated mission of Girona 1000 with robotic arm to scan and collect d
 - `pcl_geometric_primitives_detector` package
 
 
+## Use Case
+perception.launch
+(check mission file?)
+scan + circle around cube
+go to luma -> "Received PointCloud data."
+rosservice call /cluster "{}"
+
 ## TODO
 
 ### BT

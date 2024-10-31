@@ -25,8 +25,14 @@ def pointcloud_callback(msg):
 
 def handle_cluster(req):
     global pcd_data
+    cluster_response = ClusterResponse()
+
+
     if pcd_data is None:
-        return ClusterResponse(success=False, message="PointCloud data not available.")
+        cluster_response.success = False
+        cluster_response.message = "PointCloud data not available."
+        cluster_response.points = []
+        return cluster_response
     
     points = pcd_data
     optimal_clusters = find_optimal_clusters(points)
@@ -35,12 +41,14 @@ def handle_cluster(req):
     cluster_labels = kmeans.labels_
     
     object_info_list = []  # List to store the ClusterObjInfo for each cluster
+    centroids = []
 
     for i in range(optimal_clusters):
         cluster_points = points[cluster_labels == i]
         
         # Calculate the centroid of the cluster
         centroid = np.mean(cluster_points, axis=0)
+        centroids.extend(centroid.tolist())
 
         # Create surface point
         surface_point = calculate_surface_point(cluster_points)
@@ -69,10 +77,14 @@ def handle_cluster(req):
     publish_object_info(object_info_list)
 
     # Returning ClusterResponse
-    cluster_response = ClusterResponse()
+    
     cluster_response.success = True
     cluster_response.message = "Clustering completed successfully."
-    return cluster_response
+    cluster_response.points = centroids
+
+    print("Type of cluster_response.points:", type(cluster_response.points))
+    print("Contents of cluster_response.points:", cluster_response.points)
+    return cluster_response.success, cluster_response.message, cluster_response.points
 
 def create_pointcloud2(points):
     """
@@ -101,11 +113,13 @@ def find_optimal_clusters(data):
         silhouette_avg = silhouette_score(data, cluster_labels)
         silhouette_scores.append(silhouette_avg)
 
-    plt.plot(range(2, max_clusters + 1), silhouette_scores, marker='o')
-    plt.xlabel('Number of clusters')
-    plt.ylabel('Silhouette Score')
-    plt.title('Silhouette Score for Optimal Number of Clusters')
-    plt.show()
+    fig, ax = plt.subplots()
+    ax.plot(range(2, max_clusters + 1), silhouette_scores, marker='o')
+    ax.set_xlabel('Number of clusters')
+    ax.set_ylabel('Silhouette Score')
+    ax.set_title('Silhouette Score for Optimal Number of Clusters')
+    fig.savefig('silhouette_scores.png')
+    plt.close(fig)
 
     optimal_clusters = np.argmax(silhouette_scores) + 2  # Adding 2 because the range starts from 2
     rospy.loginfo(optimal_clusters)
@@ -113,7 +127,15 @@ def find_optimal_clusters(data):
 
 def calculate_surface_point(cluster_points):
     centroid = np.mean(cluster_points, axis=0)
-    surface_point = np.max(cluster_points[np.logical_and(cluster_points[:, :2] == centroid[:2], cluster_points[:, 2] == np.max(cluster_points[:, 2]))], axis=0)
+    # Condition with np.all and np.isclose for better precision handling
+    condition = np.logical_and(
+        np.all(np.isclose(cluster_points[:, :2], centroid[:2]), axis=1),
+        cluster_points[:, 2] == np.max(cluster_points[:, 2])
+    )
+    if np.any(condition):
+        surface_point = np.max(cluster_points[condition], axis=0)
+    else:
+        surface_point = centroid  # Fallback if no points match
     return surface_point
 
 def tf_broadcast(point, frame_id):
@@ -135,10 +157,15 @@ def tf_broadcast(point, frame_id):
 
 def publish_object_info(object_info_list):
     object_info_pub = rospy.Publisher('/clustered_point_cloud', ClusterObjInfo, queue_size=10)
+    object_cluster_pub = rospy.Publisher('/clustered_point_cloud_visual', PointCloud2, queue_size=10)
     rate = rospy.Rate(10)  # 10 Hz
+
+    print("going to publish object_info")
 
     for object_info in object_info_list:
         object_info_pub.publish(object_info)
+        object_cluster_pub.publish(object_info.clustered_pointcloud)
+        print("published object_info")
         rate.sleep()
 
 def clustering_server():

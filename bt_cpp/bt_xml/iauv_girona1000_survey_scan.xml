@@ -3,7 +3,7 @@
         <Sequence name="iauv_girona1000_survey_scan">
             <LogSequence name="start"    message="mission start" />
             <!-- Main Path -->
-            <PathRequest name="main_path" type="scan" start="-2.5;-2.0;5.5" goal="0.0;3.0;3.0" width="10.0" length="5.0" radius="0.0" survey_type="{survey_type}"/>
+            <PathRequest name="main_path" type="scan" start="-2.5;-2.0;5.5" goal="0.0;3.0;5.5" width="10.0" length="5.0" radius="0.0" survey_type="{survey_type}"/>
             <RetryUntilSuccessful num_attempts="5">
                 <Sequence name="ScanLoop">
                     <LogSequence name="SetScanPath" message="Setting scan path"/>
@@ -29,4 +29,18 @@
             <LogSequence name="RetryUntilSuccessful" message="RetryUntilSuccessful Success"/>
         </Sequence>
     </BehaviorTree>
-</root>
+</root> 
+
+<!-- 
+<root BTCPP_format="4">
+    <BehaviorTree ID="main_bt">
+        <Sequence name="iauv_girona1000_survey_scan">
+            <LogSequence name="start"    message="mission start" />
+            <!-- Main Path -->
+            <PathRequest type="circular" start="3.0;3.0;5.0" goal="3.0;4.0;3.0" width="0.0" length="0.0" radius="2.0" survey_type="{survey_type}"/>
+            <Inspect inspection_is_completed="false" survey_type="{survey_type}"/>
+        </Sequence>
+    </BehaviorTree>
+</root> -->
+
+

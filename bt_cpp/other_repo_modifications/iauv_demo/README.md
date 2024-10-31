@@ -10,3 +10,28 @@
 ```xml
 <arg name="enable_joystick" default="false"/>
 ```
+
+* `iauv_motion_planner/scripts/request_path.py` (to go to LUMA)
+```bash
++        req.planner = GetPathRequest.SIMPLE
++
++        # LUMA
++        req.start.position.x = -7.5
++        req.start.position.y = 3
++        req.start.position.z = 2.25
++
++        req.start.orientation.w = 0.707
++        req.start.orientation.z = -0.707
++
++        req.goal.position.x = -10.0
++        req.goal.position.y = 3
++        req.goal.position.z = 6.25
+         # req.goal.orientation.w = 0.707
+         # req.goal.orientation.z = 0.707
+         # req.goal.orientation.w = 0.924
+         # req.goal.orientation.z = 0.383
+-        req.goal.orientation.w = 1
+-        req.goal.orientation.z = 0
++        req.goal.orientation.w = 0.707
++        req.goal.orientation.z = -0.707
+```
