@@ -19,10 +19,19 @@ pcd_data = None
 
 def pointcloud_callback(msg):
     global pcd_data
-    points = np.array(list(pc2.read_points(msg, skip_nans=True)))
-    pcd_data = points
-    rospy.loginfo("Received PointCloud data.")
+    min_height = 0.4  
+    max_height = 10  
 
+    # Read points from PointCloud2 message
+    points = np.array(list(pc2.read_points(msg, skip_nans=True)))
+
+    # Apply height-based filter
+    filtered_points = points[(points[:, 2] >= min_height) & (points[:, 2] <= max_height)]
+
+    # Store the filtered points for clustering
+    pcd_data = filtered_points
+    rospy.loginfo("Received PointCloud data.")
+    
 def handle_cluster(req):
     global pcd_data
     cluster_response = ClusterResponse()
