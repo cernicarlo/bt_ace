@@ -7,7 +7,7 @@ import tkinter as tk
 from tkinter import simpledialog
 import graphviz
 import yaml
-from cola2_stonefish.srv import AddObject, AddAffordance, ExportGraph, CreateGUI, DisplayGraph, DisplayGraphResponse, CheckRelation
+from pcl_geometric_primitives_detector.srv import AddObject, AddAffordance, ExportGraph, CreateGUI, DisplayGraph, DisplayGraphResponse, CheckRelation, GetActions, GetActionsResponse
 from std_srvs.srv import Trigger, TriggerResponse
 
 class Graph:
@@ -199,6 +199,46 @@ def handle_validate_mission(req, graph):
     else:
         return TriggerResponse(success=False, message="Mission validation failed. Requirements not met.")
    
+   
+def load_taxonomy(file_path):
+    """
+    Load the taxonomy from a YAML file.
+    Returns a dictionary with object names as keys and their actions as lists of strings.
+    """
+    with open(file_path, 'r') as file:
+        data = yaml.safe_load(file)
+    taxonomy_data = {obj['name']: obj['actions'] for obj in data['objects']}
+    return taxonomy_data
+
+
+def handle_get_actions(req, graph, taxonomy):
+    """
+    Service handler for retrieving possible actions for an object.
+    
+    Parameters:
+    - req: The request object containing the label (object name).
+    - graph: The affordance graph instance.
+    - taxonomy: Dictionary with object actions from taxonomy.
+    
+    Returns:
+    - GetActionsResponse with a list of possible actions for the object.
+    """
+    label = req.label
+    possible_actions = []
+
+    # Check if the object exists in the taxonomy
+    if label in taxonomy:
+        # Get the actions allowed by the taxonomy for this object
+        object_actions = taxonomy[label]
+        
+        # Verify each action in the context of the affordance graph
+        for action in object_actions:
+            if graph.has_relation('AUV', label, action):
+                possible_actions.append(action)
+    
+    # Return the list of possible actions as response
+    return GetActionsResponse(actions=possible_actions)
+   
     
 def gui_service(graph):
     rospy.init_node("affordance_graph") 
@@ -206,13 +246,16 @@ def gui_service(graph):
     rospy.Service("display_graph", DisplayGraph, lambda req: handle_display_graph(req, graph))
     rospy.Service("query", CheckRelation, lambda req: handle_check_relation(req, graph))
     rospy.Service("validate_mission", Trigger, lambda req: handle_validate_mission(req, graph))
+    rospy.Service("get_actions", GetActions, lambda req: handle_get_actions(req, graph, taxonomy))
     rospy.loginfo("GUI service is ready.")
     rospy.spin()
 
 if __name__ == "__main__":
     filename = rospy.get_param('/affordance_graph')
+    taxonomy_filename=rospy.get_param('/taxonomy')
     rospy.loginfo("Using filename: %s", filename)
     print("Filename parameter:", filename)
     graph = Graph.read_graph_from_yaml(filename)
+    taxonomy = load_taxonomy(taxonomy_file)
     gui_service(graph)
 

@@ -1,0 +1,5 @@
+# GetActions.srv
+string label
+---
+string[] actions
+

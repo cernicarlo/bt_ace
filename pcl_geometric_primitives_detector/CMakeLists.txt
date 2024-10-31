@@ -31,6 +31,7 @@ add_service_files(
   CreateGUI.srv
   DisplayGraph.srv
   CheckRelation.srv
+  GetActions.srv
 )
 
 
