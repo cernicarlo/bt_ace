@@ -99,8 +99,10 @@ class Graph:
             return False
         
 class GUIWindow:
-    def __init__(self, graph):
+    def __init__(self, graph, taxonomy, taxonomy_file):
         self.graph = graph
+        self.taxonomy = taxonomy  # Pass the taxonomy as a dictionary
+        self.taxonomy_file = taxonomy_file  # File path to the taxonomy YAML file
         self.root = tk.Tk()
         self.root.title("ROS GUI")
 
@@ -110,6 +112,9 @@ class GUIWindow:
         self.add_affordance_button = tk.Button(self.root, text="Add Affordance", command=self.add_affordance)
         self.add_affordance_button.pack()
 
+        self.add_taxonomy_button = tk.Button(self.root, text="Add Object to Taxonomy", command=self.add_object_to_taxonomy)
+        self.add_taxonomy_button.pack()
+        
         self.save_button = tk.Button(self.root, text="Save and Finish", command=self.save_and_finish)
         self.save_button.pack()
 
@@ -145,7 +150,44 @@ class GUIWindow:
                         rospy.logwarn("Failed to add affordance!")
                 except rospy.ServiceException as e:
                     rospy.logerr("Service call failed: {}".format(e))
-
+                    
+    def add_object_to_taxonomy(self):
+        """
+        Prompts the user to add a new object with associated actions to the taxonomy
+        and saves the updated taxonomy to the YAML file.
+        """
+        object_name = simpledialog.askstring("Add Object to Taxonomy", "Enter object name:")
+        if not object_name:
+            rospy.logwarn("No object name entered.")
+            return
+            
+        # Check if the object already exists in the taxonomy
+        if object_name in self.taxonomy:
+           rospy.logwarn("Object '{}' already exists in the taxonomy.".format(object_name))
+           return
+        
+        # Prompt for actions (comma-separated input, then split to list)
+        actions_input = simpledialog.askstring("Add Object to Taxonomy", "Enter actions (comma-separated):")
+        if actions_input:
+            actions = [action.strip() for action in actions_input.split(',') if action.strip()]
+            
+            if actions:
+                rospy.loginfo("Adding object to taxonomy: {} with actions {}".format(object_name, actions))
+                
+                # Add the new object to the taxonomy dictionary
+                self.taxonomy[object_name] = actions
+                
+                # Save the updated taxonomy to the YAML file
+                try:
+                    with open(self.taxonomy_file, 'w') as file:
+                        yaml.dump({'objects': [{'name': name, 'actions': act} for name, act in self.taxonomy.items()]}, file)
+                    rospy.loginfo("Object and actions saved to taxonomy successfully!")
+                except Exception as e:
+                    rospy.logerr("Failed to save taxonomy to YAML: {}".format(e))
+            else:
+                rospy.logwarn("No valid actions entered.")
+        else:
+            rospy.logwarn("No actions entered.")
 
     def save_and_finish(self):
         self.root.destroy()
