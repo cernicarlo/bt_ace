@@ -6,35 +6,17 @@ graph:
     target: clearWater
     action: can be used in
   - subject: DepthCamera
-    target: ManipTarget
-    action: generate
-  - subject: DepthCamera
-    target: TouchTarget
-    action: generate
-  - subject: ManipTarget
-    target: Target
-    action: is
-  - subject: TouchTarget
-    target: Target
-    action: is
-  - subject: DepthCamera
-    target: Target
-    action: can observe
+    target: Object
+    action: can observe  # "observe" from the taxonomy will specify what can be observed
   - subject: AUV
     target: Arm
     action: has
-  - subject: Touch
-    target: TouchTarget
-    action: needs
-  - subject: Manipulation
-    target: ManipTarget
-    action: needs
   - subject: Arm
-    target: Manipulation
-    action: allows
+    target: Object
+    action: can manipulate  # "manipulate" derived from taxonomy
   - subject: Arm
-    target: Touch
-    action: allows
+    target: Object
+    action: can touch
   - subject: Sonar
     target: turbidWater
     action: can be used in
