@@ -253,7 +253,7 @@ def handle_validate_mission(req, graph):
     Service handler to validate the mission file.
     """
     # Assume mission file path is set as a parameter or hard-coded here
-    mission_file = ospy.get_param('/mission_file')
+    mission_file = rospy.get_param('/mission_file')
     
     rospy.loginfo("Validating mission from file: {}".format(mission_file))
     

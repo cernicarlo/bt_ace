@@ -22,7 +22,7 @@ class MyOpen3DNode:
 
         # Subscriber to get the incoming PointCloud2 messages
         self.subscription = rospy.Subscriber(
-            '/girona1000/depth_cam/pointcloud',  # Input topic name
+            '/girona1000/accumulated_pointcloud',  # Input topic name
             PointCloud2,
             self.point_cloud_callback,
             queue_size=10
@@ -54,10 +54,10 @@ class MyOpen3DNode:
     def point_cloud_callback(self, msg):
         try:
             # Lookup the transformation for the optical modems
-            self.tf_listener.waitForTransform('girona1000/origin', 'girona1000/luma_link', rospy.Time(0), rospy.Duration(4.0))
-            (trans1, rot1) = self.tf_listener.lookupTransform('girona1000/origin', 'girona1000/luma_link', rospy.Time(0))
-            self.tf_listener.waitForTransform('world_ned', 'luma_station', rospy.Time(0), rospy.Duration(4.0))
-            (trans2, rot2) = self.tf_listener.lookupTransform('world_ned', 'luma_station', rospy.Time(0))
+            self.tf_listener.waitForTransform('world_ned', 'girona1000/vlc_link', rospy.Time(0), rospy.Duration(4.0))
+            (trans1, rot1) = self.tf_listener.lookupTransform('world_ned', 'girona1000/vlc_link', rospy.Time(0))
+            self.tf_listener.waitForTransform('world_ned', 'vlc_station', rospy.Time(0), rospy.Duration(4.0))
+            (trans2, rot2) = self.tf_listener.lookupTransform('world_ned', 'vlc_station', rospy.Time(0))
 
             optical_modem_tf_1 = np.array(trans1)  # Position of luma_girona
             optical_modem_tf_2 = np.array(trans2)  # Position of luma_computer
@@ -114,8 +114,10 @@ class MyOpen3DNode:
         yaw2 = euler2[2]  # Z-axis rotation for luma_computer
 
         # Check if the angles of both modems are approximately aligned
+        yaw1 += 1.5707963 # yaw of girona looking from reverse
         angle_diff = abs(yaw1 - yaw2)
         if angle_diff > np.pi / 4:  # For example, 45 degrees
+            print(f"angle_diff({angle_diff}) = abs( yaw1({yaw1}) - yaw({yaw2})) > np.pi / 4({np.pi / 4})")
             return False
 
         return True

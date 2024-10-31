@@ -83,6 +83,7 @@ catkin_install_python(PROGRAMS
   scripts/object_sensing_ACE.py
   scripts/operator_label_2_obj_label.py
   scripts/pcd_compressor.py
+  scripts/pcd_accumulator.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

@@ -20,4 +20,7 @@
     
     <!-- Run pcd_compressor.py -->
     <node name="pcd_compressor_node" pkg="pcl_geometric_primitives_detector" type="pcd_compressor.py" output="screen" />
+
+    <!-- Run pcd_accumulator.py -->
+    <node name="pcd_accumulator_node" pkg="pcl_geometric_primitives_detector" type="pcd_accumulator.py" output="screen" />
 </launch>
