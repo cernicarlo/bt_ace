@@ -5,7 +5,7 @@ The **CMakeLists.txt** and **package.xml** files are compatible with both ROS an
 
 
 ## For users
-- add/remove the BT in `bt_cpp/bt_xml` file following the conventions
+- add/remove the BT in `bt_cpp/bt_xml` file
 
 ## For developers
 * create the node in the `bt_cpp/nodes` folder

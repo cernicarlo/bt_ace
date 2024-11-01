@@ -9,13 +9,7 @@ Repo for automated mission of Girona 1000 with robotic arm to scan and collect d
 - Once you install ROS Noetic, create a workspace (eg. `~/catkin_ws`) following ROS instructions for ws creation (either `catkin_make` or -the one I used - `catkin init`)
 
 ### IAUV Girona 1000 use case
-This branch is built to work with [iauv_demo](https://github.com/GitSRealpe/iauv_demo/): git clone this repo in the same `~/catkin_ws/src` and follow the instructions provided by the repo. I used this [commit](https://github.com/GitSRealpe/iauv_demo/commit/4f2df70af35bb16ef5fda9cbb9a80e60c6ebf021). For this repo, the only modification made was in `iauv_demo/iauv_description/launch/core/girona1000_base.launch.core L43-45`
-```xml
-    <!-- <node name="captain" pkg="cola2_control" type="captain_node" output="screen">
-        <param name="vehicle_config_launch_mission_package" value="cola2_$(arg robot_name)"/>
-    </node> -->
-
-```
+This branch is built to work with [iauv_demo](https://github.com/GitSRealpe/iauv_demo/): git clone this repo in the same `~/catkin_ws/src` and follow the instructions provided by the repo. I used this [commit](https://github.com/GitSRealpe/iauv_demo/commit/4848c8fe560a5b6e492adde968dbb2573105e5b6). PTAL at `other_repo_modifications`
 
 I also cloned and built these public repo (some of them may be not relevant for this project):
 - [blueprintlab_reachbravo7_manipulator_description](https://bitbucket.org/udg_cirs/blueprintlab_reachbravo7_manipulator_description.git)
@@ -37,7 +31,6 @@ Please take a look at the folder `other_repo_modification` to substitute the rel
 ### BT CPP
 - clone [BehaviorTree.CPP](https://github.com/BehaviorTree/BehaviorTree.CPP) (last time I checked, it was using this [commit](https://github.com/BehaviorTree/BehaviorTree.CPP/commit/1fcb624d4d7b9d1f357378b20ff19bdcc3853cea)) in `src` (eg. `~/catkin_ws/src`)
 - clone this repo in the same `src` folder (eg. `~/catkin_ws/src`)
-- modify `bt_ace/bt_cpp/src/scan_path.cpp` the variable `abs_repo_path` with the path where is located your local `bt_ace/bt_cpp/xml` file  and rebuild<!-- TODO: assign a dynamic variable -->
 - build the ws (eg. execute `catkin build` in `~/catkin_ws`)
 - `source ~/catkin_ws/devel/setup.bash`
 
