@@ -9,21 +9,6 @@
 
 using namespace BT;
 
-template <typename NodeType>
-void registerCustomNode(BT::BehaviorTreeFactory& factory,
-                        const std::string& registration_id,
-                        ros::NodeHandle& nh) {
-   // Use the registration_id directly as the type identifier
-   BT::NodeBuilder builder = [&nh](
-                                 const std::string& name,
-                                 const BT::NodeConfig& config) {
-      return std::make_unique<NodeType>(nh, name, config);
-   };
-
-   // Assuming you directly use the registration_id as the manifest type
-   factory.registerBuilder<NodeType>(registration_id, builder);
-}
-
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "bt_cpp_node");

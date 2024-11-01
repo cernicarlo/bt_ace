@@ -1,4 +1,6 @@
 #pragma once
+#include "behaviortree_cpp/bt_factory.h"
+#include <ros/ros.h>
 
 namespace IauvGirona1000Survey {
 
@@ -39,4 +41,19 @@ inline void printIfFromLastPrintHavePassedSomeSeconds(
    }
 }
 
+}
+
+template <typename NodeType>
+void registerCustomNode(BT::BehaviorTreeFactory& factory,
+                        const std::string& registration_id,
+                        ros::NodeHandle& nh) {
+   // Use the registration_id directly as the type identifier
+   BT::NodeBuilder builder = [&nh](
+                                 const std::string& name,
+                                 const BT::NodeConfig& config) {
+      return std::make_unique<NodeType>(nh, name, config);
+   };
+
+   // Assuming you directly use the registration_id as the manifest type
+   factory.registerBuilder<NodeType>(registration_id, builder);
 }

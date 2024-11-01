@@ -35,6 +35,7 @@ include_directories(
 
 # NODES 
 add_library(nodes STATIC
+    nodes/bt_manager.cpp
     nodes/follow_path_node.cpp
     nodes/path_request_node.cpp
     nodes/is_path_clear_node.cpp
@@ -55,7 +56,7 @@ add_executable(scan_path src/scan_path.cpp)
 target_include_directories(scan_path PRIVATE ${catkin_INCLUDE_DIRS})
 target_link_libraries(scan_path ${catkin_LIBRARIES} nodes)
 
-add_executable(bt_manager src/bt_manager.cpp)
+add_executable(bt_manager src/exec_bt_manager.cpp)
 target_include_directories(bt_manager PRIVATE ${catkin_INCLUDE_DIRS})
 target_link_libraries(bt_manager ${catkin_LIBRARIES} nodes)
 
