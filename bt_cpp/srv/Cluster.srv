@@ -1,0 +1,9 @@
+# Request
+---
+# No request fields needed for this service
+
+# Response
+bool success
+string message
+float64[] points
+

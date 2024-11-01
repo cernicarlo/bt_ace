@@ -1,5 +1,6 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "bt_cpp/bt_manager.h"
+#include "bt_cpp/point_cloud_processor.h"
 #include "bt_cpp/follow_path_node.h"
 #include "bt_cpp/path_request_node.h"
 #include "bt_cpp/is_path_clear_node.h"
@@ -47,6 +48,7 @@ int main(int argc, char** argv)
   Mission
 */ 
 
+/* 1st - execute main mission (survey) */
 /// Validate Mission
   // Create a service client for the /validate_mission service
   ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>("/validate_mission");
@@ -114,6 +116,20 @@ int main(int argc, char** argv)
 /// Execute stack mission
   bt_manager.executeStack();
   std::cout << "First stack executed" << std::endl;
+
+/* 2nd - communicate to user through luma what seen */
+/// Talk to luma to analyze what surveyed so far
+  // activate pcl_processor (it will trigger the clustering service as soon as luma pubblication happens)
+  PointCloudProcessor pc_rocessor(nh);
+
+  // TODO: subscribe to /labeled_obj_info (labeledObjInfo) 
+  /*
+  geometry_msgs/Point centroid
+  geometry_msgs/Point surface_point
+  sensor_msgs/PointCloud2 clustered_pointcloud
+  string label
+  */
+
 
   // go to Luma
   bt_manager.populateStack({"goto_luma"});

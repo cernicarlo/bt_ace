@@ -17,6 +17,23 @@ find_package(catkin REQUIRED COMPONENTS
   )
 
 
+add_message_files(
+  FILES
+  LabeledObjInfo.msg
+)
+
+
+add_service_files(
+  FILES
+  Cluster.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  sensor_msgs
+)
+
 catkin_package(
   CATKIN_DEPENDS 
   behaviortree_cpp 
