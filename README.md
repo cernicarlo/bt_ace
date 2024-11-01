@@ -78,6 +78,11 @@ T3
 rosrun bt_cpp bt_manager
 ```
 
+T4
+```bash
+# to keep separate for debugging - to be included in perception.launch
+rosrun pcl_geometric_primitives_detector pcl_geometric_primitives_detector
+```
 
 perception.launch
 rosservice call /validate_mission
@@ -93,8 +98,60 @@ execute stack
 
 ## TODO
 
+### PCL
+- debug affordanceGraph /validate_mission (now there is an hacky-fix):
+I changed `affordanceGraph.py` from:
+```python
+                 if len(parts) == 3 and parts[1] == "do":  # Example: "AUV do Survey"
+                    subject = parts[0]
+
+                    action = parts[2]
+                    target = None
+ 
+
+                elif len(parts) == 4 and parts[1] == "look" and parts[2] == "at":  # Example: "AUV look at Sphere"
+                    subject = parts[0]
+                    action = "observe"  # Map "look at" to "observe" as per affordance graph terminology
+                    target = parts[3]
+                    rospy.set_param('/target', target)
+```
+
+to:
+
+```python
+                 if parts[1] == "do":  # Example: "AUV do Survey"
+                    subject = parts[0]
+                    action = "allows"
+                    target = parts[2]
+                    action = parts[2]
+                    target = None
+ 
+                elif parts[1] == "look_at":  # Example: "AUV look_at Sphere"
+                    subject = parts[0]
+                    action = "observe"  # Map "look at" to "observe" as per affordance graph terminology
+                    target = parts[2]
+                    rospy.set_param('/target', target)
+
+```
+
+and mission_file.txt from:
+```
+AUV do Survey
+AUV look at Sphere
+```
+to:
+
+```
+AUV do Survey
+AUV look_at Sphere
+```
+
+One request here: please keep the format as 3 words (`subject` `action` `target`) and, if you need a composed word, use the underscore (eg. `look at` -> `look_at`)
+
+- debug `pcl_geometric_primitives_detector.cpp` (it gives `Segmentation Fault` in `detectPlane` inside the while. It's either when it has to recheck the while condition `while (!remaining_cloud->points.empty())` or when it executes `extract.filter(*remaining_cloud);`)
+
 ### BT
-- adjust condition isPathClear
-- test whole path
-- write nodes for welcoming clustering scripts
-- write nodes to interact with outside
+- subscriber to labelObjInfo
+- getAction
+- assemble info (type of actions and coord relative objects) to communicate target position, prioritize bt and populate stack
+- verify third part of mission
