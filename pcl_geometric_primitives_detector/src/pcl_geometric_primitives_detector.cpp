@@ -213,69 +213,48 @@ std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, double, std::string> detectPl
     double total_fitness_score = 0.0; // Total fitness score
 
     int plane_count = 0;
-    while (!remaining_cloud->points.empty())
+while (!remaining_cloud->points.empty())
+{
+    // Fit a plane using RANSAC
+    pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
+    pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+    pcl::SACSegmentation<pcl::PointXYZ> seg;
+    seg.setOptimizeCoefficients(true);
+    seg.setModelType(pcl::SACMODEL_PLANE);
+    seg.setMethodType(pcl::SAC_RANSAC);
+    seg.setDistanceThreshold(0.01);
+    seg.setInputCloud(remaining_cloud);
+    seg.segment(*inliers, *coefficients);
+
+    if (inliers->indices.empty())
     {
-        // Fit a plane using RANSAC
-        pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
-        pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
-        pcl::SACSegmentation<pcl::PointXYZ> seg;
-        seg.setOptimizeCoefficients(true);
-        seg.setModelType(pcl::SACMODEL_PLANE);
-        seg.setMethodType(pcl::SAC_RANSAC);
-        seg.setDistanceThreshold(0.01); // Adjust this value if necessary
-        seg.setInputCloud(remaining_cloud);
-        seg.segment(*inliers, *coefficients);
-
-        if (inliers->indices.empty())
-        {
-            std::cout << "No more planes detected." << std::endl;
-            break;
-        }
-
-        std::cout << "Detected Plane: " << plane_count + 1 << " Coefficients: "
-                  << coefficients->values[0] << " " << coefficients->values[1] << " "
-                  << coefficients->values[2] << " " << coefficients->values[3] << std::endl;
-
-        // Calculate fitness score for this plane
-        double fitness_score = 0.0;
-        for (int index : inliers->indices)
-        {
-            fitness_score += pointToPlaneDistance(remaining_cloud->points[index], *coefficients);
-        }
-        fitness_score /= inliers->indices.size(); // Average distance
-        total_fitness_score += fitness_score;
-
-        // Generate a unique color for each plane
-        uint8_t r, g, b;
-        std::tie(r, g, b) = generateColor(plane_count);  // Generate color for each plane
-
-        // Extract inliers (points forming the detected plane)
-        pcl::ExtractIndices<pcl::PointXYZ> extract;
-        extract.setInputCloud(remaining_cloud);
-        extract.setIndices(inliers);
-        extract.setNegative(false);  // Keep only inliers
-        pcl::PointCloud<pcl::PointXYZ>::Ptr plane(new pcl::PointCloud<pcl::PointXYZ>());
-        extract.filter(*plane);
-
-        // Color the points and add them to the final colored planes cloud
-        for (const auto& point : plane->points)
-        {
-            pcl::PointXYZRGB colored_point;
-            colored_point.x = point.x;
-            colored_point.y = point.y;
-            colored_point.z = point.z;
-            colored_point.r = r;
-            colored_point.g = g;
-            colored_point.b = b;
-            colored_planes_cloud->points.push_back(colored_point);
-        }
-
-        // Remove inliers from remaining cloud for the next iteration
-        extract.setNegative(true);  // Remove inliers from remaining cloud
-        extract.filter(*remaining_cloud);
-
-        plane_count++;  // Increment the plane counter
+        std::cout << "No more planes detected." << std::endl;
+        break;  // Exit loop if no inliers are found
     }
+
+    // Process inliers and remaining points
+    pcl::ExtractIndices<pcl::PointXYZ> extract;
+    extract.setInputCloud(remaining_cloud);
+    extract.setIndices(inliers);
+    extract.setNegative(false);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr plane(new pcl::PointCloud<pcl::PointXYZ>());
+    extract.filter(*plane);
+
+    // Remove inliers from remaining cloud
+    extract.setNegative(true);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr temp_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+    extract.filter(*temp_cloud);
+    remaining_cloud = temp_cloud;
+
+    if (remaining_cloud->points.empty())
+    {
+        std::cout << "No more points left in remaining cloud." << std::endl;
+        break;  // Exit if no points remain
+    }
+
+    plane_count++;
+}
+
 
     std::string label = "";
     if(plane_count==6){
