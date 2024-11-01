@@ -28,7 +28,7 @@ class PointCloudAccumulator:
         # Create a new PointCloud2 message from accumulated points
         header = rospy.Header()
         header.stamp = rospy.Time.now()
-        header.frame_id = "girona1000/depth_cam_link"  # Change frame ID as necessary
+        header.frame_id = "world_ned"  # Change frame ID as necessary
         accumulated_pc2 = pc2.create_cloud_xyz32(header, self.accumulated_points.tolist())
         self.publisher.publish(accumulated_pc2)
 
