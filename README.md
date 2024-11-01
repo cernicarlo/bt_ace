@@ -63,7 +63,7 @@ WIP for girona1000 use case: the AUV goes to do the survey, it suddenly find an 
 T1
 ```bash
 # launch simulation w/ Stonefish, RVIZ, service to plan the path and action service to follow the path
-roslaunch iauv_description single_robot.launch
+roslaunch bt_cpp scenario.launch
 ```
 
 T2
@@ -74,28 +74,22 @@ roslaunch pcl_geometric_primitives_detector perception.launch
 
 T3
 ```bash
-# enable the pose controller for the auv
-roslaunch girona_utils auv_pose_controller.launch robot:=girona1000
-```
-
-<!-- T4
-```bash
-# start the node that will detect the object (at this point, it uses priviledged info - TODO: make it real)
-rosrun bt_cpp detect_object.py
-``` -->
-
-
-T5
-```bash
-rosrun bt_cpp scan_path
+# Launch the BT Manager
+rosrun bt_cpp bt_manager
 ```
 
 
 perception.launch
-(check mission file?)
-scan + circle around cube
+rosservice call /validate_mission
+populate stack for mission(scan + circle around cube)
+execute stack
+rosrun pcl_geometric_primitives_detector pcl_geometric_primitives_detector
 go to luma -> "Received PointCloud data."
 rosservice call /cluster "{}"
+take labeledObjInfo (published by pcl_geometric_primitives_detector)
+getAction (labeledObjInfo)
+populate bt stack with doable actions(bts)
+execute stack
 
 ## TODO
 

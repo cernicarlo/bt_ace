@@ -46,15 +46,15 @@ class Graph:
                 # Parse each mission line in the format "Subject do Action" or "Subject look at Target"
                 parts = line.split()
                 
-                if len(parts) == 3 and parts[1] == "do":  # Example: "AUV do Survey"
+                if parts[1] == "do":  # Example: "AUV do Survey"
                     subject = parts[0]
-                    action = parts[2]
-                    target = None
+                    action = "allows"
+                    target = parts[2]
 
-                elif len(parts) == 4 and parts[1] == "look" and parts[2] == "at":  # Example: "AUV look at Sphere"
+                elif parts[1] == "look_at":  # Example: "AUV look_at Sphere"
                     subject = parts[0]
                     action = "observe"  # Map "look at" to "observe" as per affordance graph terminology
-                    target = parts[3]
+                    target = parts[2]
                     rospy.set_param('/target', target)
 
                 else:
