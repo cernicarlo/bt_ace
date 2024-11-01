@@ -69,14 +69,14 @@ WIP for girona1000 use case: the AUV goes to do the survey, it suddenly find an 
 
 T1
 ```bash
-# launch simulation w/ Stonefish and RVIZ
+# launch simulation w/ Stonefish, RVIZ, service to plan the path and action service to follow the path
 roslaunch iauv_description single_robot.launch
 ```
 
 T2
 ```bash
 # launch node to make available the planner services
-roslaunch iauv_motion_planner planner_node.launch
+roslaunch pcl_geometric_primitives_detector perception.launch
 ```
 
 T3

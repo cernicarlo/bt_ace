@@ -1,4 +1,4 @@
-#include "bt_cpp/inspect_node.h"
+#include "bt_cpp/follow_path_node.h"
 #include "behaviortree_cpp/bt_factory.h"
 #include "iauv_motion_planner/GetPath.h"
 #include "iauv_motion_planner/GetPathRequest.h"
@@ -6,25 +6,28 @@
 
 namespace IauvGirona1000Survey {
 
-BT::NodeStatus Inspect::onStart() {
-   name_ = "Inspect";
+BT::NodeStatus FollowPath::onStart() {
+   name_ = "FollowPath";
+   log_fp_ = "[FollowPath] : ";
 
    std::string survey_type_str;
    if (getInput<std::string>("survey_type", survey_type_str)) {
+      std::string log = log_fp_ + "Survey type set to ";
       if (survey_type_str == "scan") {
          survey_type_ = SCAN;
-         ROS_INFO("Survey type set to SCAN");
+         ROS_INFO("%s", (log + "SCAN").c_str());
       } else if (survey_type_str == "circular") {
          survey_type_ = CIRCULAR;
-         ROS_INFO("Survey type set to CIRCULAR");
-      } else {
+         ROS_INFO("%s", (log + "CIRCULAR").c_str());
+      } else if (survey_type_str == "simple") {
+         survey_type_ = SIMPLE;
+         ROS_INFO("%s", (log + "SIMPLE").c_str());
+      }  else {
          throw BT::RuntimeError("Invalid survey type");
       }
    } else {
       throw BT::RuntimeError("missing required input [survey_type]");
    }
-
-   object_pose_sub_ = nh_.subscribe("/object_pose", 10, &Inspect::objectPoseCallback, this);
 
    std::cout << "Construction of " << name_ << std::endl;
    
@@ -36,7 +39,7 @@ BT::NodeStatus Inspect::onStart() {
    return BT::NodeStatus::RUNNING;
 }
 
-void Inspect::sendFollowPathGoal() {
+void FollowPath::sendFollowPathGoal() {
    girona_utils::PursuitGoal goal;
     // Wait for the message with a timeout of 1 second
     boost::shared_ptr<nav_msgs::Path const> path_msg = ros::topic::waitForMessage<nav_msgs::Path>("/iauv_motion_planner/path", nh_, ros::Duration(1.0));
@@ -49,9 +52,9 @@ void Inspect::sendFollowPathGoal() {
 
         // Send the goal to the action client
         action_client_->sendGoal(
-            goal, boost::bind(&Inspect::minimalDoneCallback, this, _1, _2),
+            goal, boost::bind(&FollowPath::minimalDoneCallback, this, _1, _2),
             PursuitClient::SimpleActiveCallback(),
-            boost::bind(&Inspect::feedbackCallback, this, _1)
+            boost::bind(&FollowPath::feedbackCallback, this, _1)
         );
     } else {
         ROS_WARN("No path message received within the timeout.");
@@ -59,78 +62,24 @@ void Inspect::sendFollowPathGoal() {
 }
 
 
-void Inspect::minimalDoneCallback(
+void FollowPath::minimalDoneCallback(
     const actionlib::SimpleClientGoalState& state,
     const girona_utils::PursuitResultConstPtr& result) {
    //  const bt_policy::BtResultConstPtr& result) {
    
-   std::cout << "[PathRequest]:" << name_ << ": Result from server: "
+   std::cout << log_fp_ << name_ << ": Result from server: "
              << (result->success ? "Success" : "Failure")
              << " with state: " << state.toString() << std::endl;
 }
 
-void Inspect::feedbackCallback(
+void FollowPath::feedbackCallback(
    const girona_utils::PursuitFeedbackConstPtr& feedback) {
    //  const bt_policy::BtFeedbackConstPtr& feedback) {
    last_feedback_ = *feedback;
 }
 
 
-
-void Inspect::objectPoseCallback(const geometry_msgs::PointStamped::ConstPtr& msg)
-{
-   // this is used only for scan to check when you detect something
-   if (survey_type_ == SCAN){
-      std::stringstream log;
-      log << "SCAN: ";
-
-      if (!std::isnan(msg->point.x)){
-         is_object_detected_ = true;
-         log << "Received object position - x: " << msg->point.x << ", y: " << msg->point.y << ", z: " << msg->point.z;
-         // printIfFromLastPrintHavePassedSomeSeconds(log.str(), 1.0);
-      } else {
-         is_object_detected_ = false;
-      }
-   }   
-    
-}
-
-
-BT::NodeStatus Inspect::isPathClear(){
-   if (is_object_detected_){
-      ROS_WARN("detected object");
-      return BT::NodeStatus::FAILURE;
-   };
-   // nothing detected, all clear
-   return BT::NodeStatus::SUCCESS;
-
-
-};
-
-bool Inspect::hasEnoughTimePassed(double seconds) {
-   auto now = std::chrono::steady_clock::now();
-   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-       now - last_print_time_);
-   return elapsed.count() >=
-          seconds * 1000;  // Convert seconds to milliseconds and compare
-}
-
-void Inspect::printIfFromLastPrintHavePassedSomeSeconds(
-    const std::string& msg, double seconds) {
-   if (msg != prev_printed_msg_) {
-      std::cout << msg << std::endl;
-      prev_printed_msg_ = msg;
-      return;
-   }
-
-   if (hasEnoughTimePassed(seconds)) {
-      std::cout << msg << std::endl;
-      last_print_time_ =
-          std::chrono::steady_clock::now();  // Update the last print time
-   }
-}
-
-BT::NodeStatus Inspect::onRunning() {
+BT::NodeStatus FollowPath::onRunning() {
    // if (isTimeOutReached()) {
    //    return BT::NodeStatus::FAILURE;
    // }
@@ -149,7 +98,7 @@ BT::NodeStatus Inspect::onRunning() {
          std::string msg = "[" + name_ + "] : " + state_server +
                            ", waypoint: " + position_str;
          msg +=  " - simulating blindness: path clear";
-         printIfFromLastPrintHavePassedSomeSeconds(msg);
+         printIfFromLastPrintHavePassedSomeSeconds(msg, 1.0,prev_printed_msg_,last_print_time_);
          last_idx_waypoint_ = last_feedback_.waypoint;
       };
       
@@ -171,7 +120,7 @@ BT::NodeStatus Inspect::onRunning() {
    }
 }
 
-BT::NodeStatus Inspect::onResult(
+BT::NodeStatus FollowPath::onResult(
     const girona_utils::PursuitResultConstPtr& res) {
    //  const bt_policy::BtResultConstPtr& res) {
 
@@ -184,7 +133,7 @@ BT::NodeStatus Inspect::onResult(
 }
 
 
-BT::NodeStatus Inspect::tick() {
+BT::NodeStatus FollowPath::tick() {
    const BT::NodeStatus prev_status = status();
    ros::Duration server_timeout(static_cast<double>(timeout_server_msec_) *
                                 1e-3);

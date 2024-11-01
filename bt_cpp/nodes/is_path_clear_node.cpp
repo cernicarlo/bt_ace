@@ -4,20 +4,7 @@
 #include "iauv_motion_planner/GetPath.h"
 #include "iauv_motion_planner/GetPathRequest.h"
 #include "iauv_motion_planner/PlannerParam.h"
-
-
-
-
-void isPathClear::printIfFromLastPrintHavePassedSomeSeconds(const std::string& msg, double seconds)
-    {
-        auto now = std::chrono::steady_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_print_time_);
-        if (elapsed.count() >= seconds * 1000)
-        {
-            ROS_INFO_STREAM(msg);
-            last_print_time_ = now;
-        }
-    }
+#include "bt_cpp/utils.h"
 
 void isPathClear::objectPoseCallback(const geometry_msgs::PointStamped::ConstPtr& msg)
     {
@@ -42,7 +29,7 @@ void isPathClear::objectPoseCallback(const geometry_msgs::PointStamped::ConstPtr
                   is_object_detected_ = false;
                   log << " - ALREADY DETECTED";
                 }
-                printIfFromLastPrintHavePassedSomeSeconds(log.str(), 1.0);
+                IauvGirona1000Survey::printIfFromLastPrintHavePassedSomeSeconds(log.str(), 1.0, prev_printed_msg_,last_print_time_);
             }
             
             else

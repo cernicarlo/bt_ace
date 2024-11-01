@@ -13,21 +13,70 @@ void PathRequest::construction() {
    if (!getInput<Pose3D>("start", _start)) {
       throw BT::RuntimeError("missing required input [start]");
    }
-   if (!getInput<Pose3D>("goal", _goal)) {
-      throw BT::RuntimeError("missing required input [goal]");
+
+   auto is_to_object = getInput<bool>("is_to_object");
+   if(!is_to_object)
+   {
+   throw BT::RuntimeError("missing required input [is_to_object]");
    }
+   _is_to_object = is_to_object.value();
+
+
+   if (!getInput<Pose3D>("goal", _goal) && !getInput<bool>("is_to_object")) {
+      throw BT::RuntimeError("missing required input [goal] or [is_to_object]");
+   } else if (getInput<Pose3D>("goal", _goal) && !getInput<bool>("is_to_object")){
+      std::cout<<"going to goal"<<_goal.x<<", "<<_goal.y<<", "<<_goal.z<<std::endl;
+   } else {
+      std::cout<<"going to the detected object"<<std::endl;
+      auto is_to_object = getInput<bool>("is_to_object");
+      _is_to_object = is_to_object.value();
+      object_pose_sub_ = nh_.subscribe("/object_pose", 10, &PathRequest::objectPoseCallback, this);
+   }
+
+
+   if (_type == "scan"){
+      if (!getInput<std::string>("length", _length)) {
+         throw BT::RuntimeError("missing required input [length]");
+      }
+      if (!getInput<std::string>("width", _width)) {
+         throw BT::RuntimeError("missing required input [width]");
+      }
+   } else if(_type == "circular"){
+      if (!getInput<std::string>("radius", _radius)) {
+         throw BT::RuntimeError("missing required input [radius]");
+      }
+   } 
+   else if(_type == "simple"){
+      auto w_start = getInput<float>("w_start").value();
+      if(!w_start)
+      {
+      throw BT::RuntimeError("missing required input [w_start]");
+      }
+      _w_start = w_start;
+
+      auto w_end = getInput<float>("w_end").value();
+      if(!w_end)
+      {
+      throw BT::RuntimeError("missing required input [w_end]");
+      }
+      _w_end = w_end;
+
+      auto z_start = getInput<float>("z_start").value();
+      if(!z_start)
+      {
+      throw BT::RuntimeError("missing required input [z_start]");
+      }
+      _z_start = z_start;
+
+      auto z_end = getInput<float>("z_end").value();
+      if(!w_start)
+      {
+      throw BT::RuntimeError("missing required input [z_end]");
+      }
+      _z_end = z_end;
+   }
+
    
-   
-   if (!getInput<std::string>("length", _length)) {
-      throw BT::RuntimeError("missing required input [length]");
-   }
-   if (!getInput<std::string>("width", _width)) {
-      throw BT::RuntimeError("missing required input [width]");
-   }
-   if (!getInput<std::string>("radius", _radius)) {
-      throw BT::RuntimeError("missing required input [radius]");
-   }
-   object_pose_sub_ = nh_.subscribe("/object_pose", 10, &PathRequest::objectPoseCallback, this);
    std::cout << "Construction of " << name_ << std::endl;
    last_print_time_ = std::chrono::steady_clock::now();
 
@@ -37,10 +86,10 @@ void PathRequest::construction() {
 void PathRequest::objectPoseCallback(const geometry_msgs::PointStamped::ConstPtr& msg)
 {
    // useful only for circle to detect where to plan the object
-   if (_type == "circular"){
+   if (_is_to_object){
       double duration = 2.0;
       std::stringstream log;
-      log << "PatRequest - " <<_type << ": ";
+      log << "PatRequest - " <<_type << " set wrt object: ";
       // object_pose_cv_.notify_one();
       _request.start.position.x = _start.x; //3.0
       _request.start.position.y = _start.y; //3.0
@@ -65,8 +114,9 @@ void PathRequest::objectPoseCallback(const geometry_msgs::PointStamped::ConstPtr
       _request.goal.orientation.w = 1;
       _request.goal.orientation.z = 0;
    
-      printIfFromLastPrintHavePassedSomeSeconds(log.str(), duration);
+      printIfFromLastPrintHavePassedSomeSeconds(log.str(), duration,prev_printed_msg_,last_print_time_);
       if (is_object_pose_received_){
+         // position set. we can shut it down
          object_pose_sub_.shutdown();
       }
    }
@@ -75,28 +125,6 @@ void PathRequest::objectPoseCallback(const geometry_msgs::PointStamped::ConstPtr
     
 }
 
-bool PathRequest::hasEnoughTimePassed(double seconds) {
-   auto now = std::chrono::steady_clock::now();
-   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-       now - last_print_time_);
-   return elapsed.count() >=
-          seconds * 1000;  // Convert seconds to milliseconds and compare
-}
-
-void PathRequest::printIfFromLastPrintHavePassedSomeSeconds(
-    const std::string& msg, double seconds) {
-   if (msg != prev_printed_msg_) {
-      std::cout << msg << std::endl;
-      prev_printed_msg_ = msg;
-      return;
-   }
-
-   if (hasEnoughTimePassed(seconds)) {
-      std::cout << msg << std::endl;
-      last_print_time_ =
-          std::chrono::steady_clock::now();  // Update the last print time
-   }
-}
 
 BT::NodeStatus PathRequest::onStart() {
    // TODO: check if assigned by the user (check if you can assign from .xml)
@@ -117,25 +145,24 @@ BT::NodeStatus PathRequest::onStart() {
    }
 
    _request.header.frame_id = "world_ned";
+   _request.start.position.x = _start.x; //-4.0
+   _request.start.position.y = _start.y; //-4.0
+   _request.start.position.z = _start.z; //5.0
+   _request.start.orientation.w = 1;
 
-
-
-   iauv_motion_planner::PlannerParam param;
-
-   if (_type == "scan"){
-       
-      // TODO: pass start and goal request from outside
-      _request.start.position.x = _start.x; //-4.0
-      _request.start.position.y = _start.y; //-4.0
-      _request.start.position.z = _start.z; //5.0
-      _request.start.orientation.w = 1;
-
+   if (!_is_to_object){
+      // set goal from blackboard only if it's not wrt object
       _request.goal.position.x = _goal.x; //0.0
       _request.goal.position.y = _goal.y; //0.0
       _request.goal.position.z = _goal.z; //3.0
-      _request.goal.orientation.w = 1;
-      _request.goal.orientation.z = 0;
 
+   }
+   
+   _request.goal.orientation.w = 1;
+   _request.goal.orientation.z = 0;
+
+   iauv_motion_planner::PlannerParam param;
+   if (_type == "scan"){
       _request.planner = iauv_motion_planner::GetPathRequest::SCANNER;
       param.key = "width";
       param.value = _width;//"7";
@@ -152,16 +179,23 @@ BT::NodeStatus PathRequest::onStart() {
        _request.params.push_back(param);
        ROS_INFO("setting path circular");
        setOutput("survey_type", "circular");
+   } else if (_type == "simple") {
+      _request.planner = iauv_motion_planner::GetPathRequest::SIMPLE;
+      _request.start.orientation.w = _w_start;
+      _request.start.orientation.z = _z_start;
+      _request.goal.orientation.w = _w_end;
+      _request.goal.orientation.z = _z_end;
+      ROS_INFO("setting path simple");
+      setOutput("survey_type", "simple");
    } else {
       ROS_ERROR("the type %s is not supported", _type.c_str());
       return BT::NodeStatus::FAILURE;
    }
 
-   if (_type == "scan"){
-      _service_call_future = std::async(std::launch::async, [&]() {
+   
+   _service_call_future = std::async(std::launch::async, [&]() {
             return _service_client.call(_request, _response);
         });
-   }
    ros::spinOnce();
 
    return BT::NodeStatus::RUNNING;
@@ -172,53 +206,34 @@ BT::NodeStatus PathRequest::onRunning() {
    double duration = 2.0;
    ros::spinOnce();
 
-   // if circular, subscibe to object pose, set and send the request
-   if (_type == "circular"){
-      ros::spinOnce();
-      if (!is_object_pose_received_ && !is_request_initialized_){
-         log = "I didn't get yet object coords";
-         printIfFromLastPrintHavePassedSomeSeconds(log, duration);
-         
-         return BT::NodeStatus::RUNNING;
+   // Check the service result periodically
+   std::this_thread::sleep_for(chr::milliseconds(10));
 
-      } else if (is_object_pose_received_ && !is_request_initialized_) {
-         _service_call_future = std::async(std::launch::async, [&]() {
-            return _service_client.call(_request, _response);
-        });
-        is_request_initialized_ = true;
-        log = "object detected";
-         printIfFromLastPrintHavePassedSomeSeconds(log, duration);
+   if (_service_call_future.wait_for(std::chrono::seconds(1)) == std::future_status::ready) {
+      
+      if (!_service_client.isValid()) {
+         ROS_ERROR("Service client is not valid.");
       }
 
-   } 
-        // Check the service result periodically
-        std::this_thread::sleep_for(chr::milliseconds(10));
+      ROS_INFO_STREAM("Start position: " << _request.start.position.x << ", " << _request.start.position.y << ", " << _request.start.position.z);
+      ROS_INFO_STREAM("Goal position: " << _request.goal.position.x << ", " << _request.goal.position.y << ", " << _request.goal.position.z);
+      if (!_service_call_future.valid()) {
+         ROS_ERROR("Service call future is invalid.");
+      }
 
-        if (_service_call_future.wait_for(std::chrono::seconds(1)) == std::future_status::ready) {
+      // Service call completed
+      bool call_success = _service_call_future.get();
+      if (call_success ) {
+            ROS_INFO_STREAM("[ PathRequest: FINISHED ] - call_success:" << call_success);
             
-            if (!_service_client.isValid()) {
-               ROS_ERROR("Service client is not valid.");
-            }
+            return BT::NodeStatus::SUCCESS;
+      } else {
+            ROS_INFO("[ PathRequest: FAILED ]");
+            return BT::NodeStatus::FAILURE;
+      }
+   }
 
-            ROS_INFO_STREAM("Start position: " << _request.start.position.x << ", " << _request.start.position.y << ", " << _request.start.position.z);
-            ROS_INFO_STREAM("Goal position: " << _request.goal.position.x << ", " << _request.goal.position.y << ", " << _request.goal.position.z);
-            if (!_service_call_future.valid()) {
-               ROS_ERROR("Service call future is invalid.");
-            }
-
-            // Service call completed
-            bool call_success = _service_call_future.get();
-            if (call_success ) {
-                ROS_INFO_STREAM("[ PathRequest: FINISHED ] - call_success:" << call_success);
-                
-                return BT::NodeStatus::SUCCESS;
-            } else {
-                ROS_INFO("[ PathRequest: FAILED ]");
-                return BT::NodeStatus::FAILURE;
-            }
-        }
-
-        return BT::NodeStatus::RUNNING;
+   return BT::NodeStatus::RUNNING;
 }
 
 BT::NodeStatus PathRequest::tick() {

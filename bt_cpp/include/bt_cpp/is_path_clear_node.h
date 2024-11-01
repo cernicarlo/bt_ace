@@ -35,12 +35,13 @@ private:
   ros::NodeHandle nh_;
   // TODO: these work only for this case, otherwise, we need a vector of points and some tolerance
   double prev_x_ , prev_y_, prev_z_;
+  std::string prev_printed_msg_;
 
 public:
   isPathClear(const std::string& name, const BT::NodeConfig& config,
                   std::string port_name, ros::NodeHandle nh)
     : BT::ConditionNode(name, config), port_name_(port_name), is_object_detected_(false), nh_(nh),
-    prev_x_(NAN), prev_y_(NAN), prev_z_(NAN)
+    prev_x_(NAN), prev_y_(NAN), prev_z_(NAN), prev_printed_msg_("")
   {
     object_pose_sub_ = nh_.subscribe("/object_pose", 10, &isPathClear::objectPoseCallback, this);
   }
@@ -52,10 +53,6 @@ public:
 
   // Callback function for the subscriber
   void objectPoseCallback(const geometry_msgs::PointStamped::ConstPtr& msg);
-
-    // Helper function to manage log output frequency
-    void printIfFromLastPrintHavePassedSomeSeconds(const std::string& msg, double seconds);
-    
   
   BT::NodeStatus tick() override;
   

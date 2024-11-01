@@ -1,0 +1,12 @@
+<launch>
+    <!-- Launch the simulation w/ Stonefish and RVIZ -->
+    <include file="$(find iauv_description)/launch/single_robot.launch" />
+
+    <!-- Launch the node to make available the planner services -->
+    <include file="$(find iauv_motion_planner)/launch/planner_node.launch" />
+
+    <!-- Launch the node to enable the pose controller for the auv -->
+    <include file="$(find girona_utils)/launch/auv_pose_controller.launch">
+        <arg name="robot" value="girona1000" />
+    </include>
+</launch>

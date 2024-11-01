@@ -35,7 +35,7 @@ include_directories(
 
 # NODES 
 add_library(nodes STATIC
-    nodes/inspect_node.cpp
+    nodes/follow_path_node.cpp
     nodes/path_request_node.cpp
     nodes/is_path_clear_node.cpp
     )

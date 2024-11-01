@@ -68,10 +68,15 @@ class PathRequest : public BT::CoroActionNode
          BT::InputPort<std::string>("type"),
          BT::InputPort<Pose3D>("start"),
          BT::InputPort<Pose3D>("goal"),
+         BT::InputPort<bool>("is_to_object"),
          BT::InputPort<std::string>("width"),
          BT::InputPort<std::string>("length"),
          BT::InputPort<std::string>("radius"),
-         BT::OutputPort<std::string>("survey_type")  
+         BT::InputPort<float>("w_start"),
+         BT::InputPort<float>("z_start"),
+         BT::InputPort<float>("w_end"),
+         BT::InputPort<float>("z_end"),
+         BT::OutputPort<std::string>("survey_type")
          };
     }
 
@@ -79,9 +84,6 @@ class PathRequest : public BT::CoroActionNode
    BT::NodeStatus onRunning();
    void construction();
    void objectPoseCallback(const geometry_msgs::PointStamped::ConstPtr& msg);
-   void printIfFromLastPrintHavePassedSomeSeconds(const std::string& msg,
-                                                  double seconds = 0.3);
-   bool hasEnoughTimePassed(double seconds);
 
   private:
     BT::NodeStatus tick() override final;
@@ -110,6 +112,12 @@ class PathRequest : public BT::CoroActionNode
     std::string _length;
     std::string _radius;
     std::string _param;
+    float _w_start;
+    float _z_start;
+    float _w_end;
+    float _z_end;
+
+    bool _is_to_object;
 };
 
 }  // namespace IauvGirona1000Survey

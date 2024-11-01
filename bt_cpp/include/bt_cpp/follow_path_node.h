@@ -17,10 +17,10 @@ typedef actionlib::SimpleActionClient<girona_utils::PursuitAction> PursuitClient
 namespace chr = std::chrono;
 namespace IauvGirona1000Survey {
 // This is an asynchronous operation
-class Inspect : public BT::CoroActionNode {
+class FollowPath : public BT::CoroActionNode {
   public:
    // Any TreeNode with ports must have a constructor with this signature
-   Inspect(ros::NodeHandle& nh, const std::string& name,
+   FollowPath(ros::NodeHandle& nh, const std::string& name,
           const BT::NodeConfig& config)
        : CoroActionNode(name, config), 
        nh_(nh), 
@@ -35,25 +35,18 @@ class Inspect : public BT::CoroActionNode {
 
    // It is mandatory to define this static method.
    static BT::PortsList providedPorts() {
-      return {BT::InputPort<std::string>("inspection_is_completed"),
+      return {BT::InputPort<std::string>("path_follow_is_completed"),
          BT::InputPort<std::string>("survey_type") };
    }
 
    BT::NodeStatus onStart();
    BT::NodeStatus onRunning();
-   BT::NodeStatus isPathClear();
+   
    void sendFollowPathGoal();
    void minimalDoneCallback(
        const actionlib::SimpleClientGoalState& state,
        const girona_utils::PursuitResultConstPtr& result);
-
    void feedbackCallback(const girona_utils::PursuitFeedbackConstPtr& feedback);
-
-   // this function is invoked once at the beginning.
-   void objectPoseCallback(const geometry_msgs::PointStamped::ConstPtr& msg);
-   void printIfFromLastPrintHavePassedSomeSeconds(const std::string& msg,
-                                                  double seconds = 0.3);
-   bool hasEnoughTimePassed(double seconds);
    BT::NodeStatus onResult(const girona_utils::PursuitResultConstPtr& res);
 
   private:
@@ -78,6 +71,7 @@ class Inspect : public BT::CoroActionNode {
     bool is_object_pose_received_;
     bool is_request_initialized_;
   std::string prev_printed_msg_;
+  std::string log_fp_;
 
 };
 
