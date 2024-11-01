@@ -97,7 +97,6 @@ BT::NodeStatus FollowPath::onRunning() {
 
          std::string msg = "[" + name_ + "] : " + state_server +
                            ", waypoint: " + position_str;
-         msg +=  " - simulating blindness: path clear";
          printIfFromLastPrintHavePassedSomeSeconds(msg, 1.0,prev_printed_msg_,last_print_time_);
          last_idx_waypoint_ = last_feedback_.waypoint;
       };
