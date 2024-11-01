@@ -47,17 +47,17 @@ int main(int argc, char** argv)
   */ 
 
   // Start mission taking BT from mission file
-  bt_manager.populateStack({"BT_1", "BT_2", "BT_3"});
+  bt_manager.populateStack({"scan", "observe_sphere"});
   bt_manager.executeStack();
   std::cout << "First stack executed" << std::endl;
 
   // go to Luma
-  bt_manager.populateStack({"bt_goto_luma"});
+  bt_manager.populateStack({"goto_luma"});
   bt_manager.executeStack();
   std::cout << "Go to LUMA executed" << std::endl;
 
   // repopulate the stack with object info
-  bt_manager.populateStack({"BT_4", "BT_5", "BT_6"});
+  bt_manager.populateStack({"observe_cube"});
   bt_manager.executeStack();
   std::cout << "Last stack executed" << std::endl;
 
