@@ -1,6 +1,10 @@
 # PCL geometric primitives detector
 ros package to run PCL
+```bash
+ros run pcl_geometric_primitives_detector pcl_geometric_primitives_detector
+```
 
+This code implements a PrimitiveDetector class for detecting geometric primitives (planes, spheres, cylinders, and cones) in a 3D point cloud, primarily using RANSAC-based segmentation from the Point Cloud Library (PCL). The detected shapes are published as [LabeledObjInfo](https://github.com/cernicarlo/bt_ace/blob/master/pcl_geometric_primitives_detector/msg/LabeledObjInfo.msg) message.
 ## Perception and Knowledge Representation Scripts
 The launch file `perception.launch` in the launch folder runs the following scripts:
 ```bash
