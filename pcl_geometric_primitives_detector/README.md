@@ -1,5 +1,5 @@
 # PCL geometric primitives detector
-ros package to run PCL
+ros run to run this package
 ```bash
 ros run pcl_geometric_primitives_detector pcl_geometric_primitives_detector
 ```
