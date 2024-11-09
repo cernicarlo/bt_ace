@@ -1,0 +1,254 @@
+# TODO
+
+## General
+- UI in flow
+
+## Mocks
+At the moment, it works with mocks. When it's fixed:
+- in `bt_cpp/nodes/primitive_detection_client.cpp` replace `/labeled_obj_info_mock` with `\labeled_obj_info`
+<!-- * `/get_actions_mock` with `\get_actions`  -->
+
+- add `pcl_geometric_primitives_detector pcl_geometric_primitives_detector` in the `perception.launch`
+
+
+## PCL
+- clustering quality
+<!-- - debug affordanceGraph /validate_mission (now there is an hacky-fix):
+I changed `affordanceGraph.py` from:
+```python
+                 if len(parts) == 3 and parts[1] == "do":  # Example: "AUV do Survey"
+                    subject = parts[0]
+
+                    action = parts[2]
+                    target = None
+ 
+
+                elif len(parts) == 4 and parts[1] == "look" and parts[2] == "at":  # Example: "AUV look at Sphere"
+                    subject = parts[0]
+                    action = "observe"  # Map "look at" to "observe" as per affordance graph terminology
+                    target = parts[3]
+                    rospy.set_param('/target', target)
+```
+
+to:
+
+```python
+                 if parts[1] == "do":  # Example: "AUV do Survey"
+                    subject = parts[0]
+                    action = "allows"
+                    target = parts[2]
+                    action = parts[2]
+                    target = None
+ 
+                elif parts[1] == "look_at":  # Example: "AUV look_at Sphere"
+                    subject = parts[0]
+                    action = "observe"  # Map "look at" to "observe" as per affordance graph terminology
+                    target = parts[2]
+                    rospy.set_param('/target', target)
+
+```
+
+and `mission_file.txt` from:
+```
+AUV do Survey
+AUV look at Sphere
+```
+to:
+
+```
+AUV do Survey
+AUV look_at Sphere
+```
+
+One request here: please keep the format as 3 words (`subject` `action` `target`) and, if you need a composed word, use the underscore (eg. `look at` -> `look_at`) -->
+
+- `affordance_graph.yaml`: I need to add a direct connection to be able to validate the mission
+
+```yaml
+  - subject: AUV
+    target: Survey
+    action: allows
+  - subject: AUV
+    target: Sphere
+    action: observe
+```
+Otherwise, I get:
+```bash
+[ERROR] [1730796466.346864779]: Mission validation failed: Mission validation failed. Requirements not met.
+```
+
+- if in `affordanceGraphN.py/`:
+```python
+def validate_mission(self, mission_file):
+        """
+        Validates a mission file by checking each action against the affordance graph.
+        """
+        ...
+                # Check the required relation in the graph
+                if not self.has_relation(subject, target, action):
+                    rospy.logwarn(f"Mission validation failed: '{subject} {action} {target}' is not possible.")
+                    return False
+```
+I change `has_relation` with `has_recursive_relation` and remove from `affordance_graph.yaml` the following lines:
+
+```yaml
+  - subject: AUV
+    target: Survey
+    action: allows
+  - subject: AUV
+    target: Sphere
+    action: observe
+```
+I can validate only `AUV do Survey` but not `AUV look_at Sphere`
+
+
+### GUI
+- write in readme how to use the GUI
+- calling `rosservice call /display_gui "{}"`, if I push `Add Object` and enter the name, I get:
+```bash
+[ERROR] [1730808039.031274]: Service call failed: service [/add_object_service_name] unavailable
+```
+
+- calling `rosservice call /display_gui "{}"`, if I push `Add Affordance`, when I have to enter the action, I get:
+```bash
+[ERROR] [1730808254.600397]: Service call failed: service [/add_affordance_service_name] unavailable
+```
+
+### pcl_geometric_primitives_detector.cpp
+- check folder `rosbags`
+- debug `pcl_geometric_primitives_detector.cpp` (it gives `Segmentation Fault` in `detectPlane` inside the while. It's either when it has to recheck the while condition `while (!remaining_cloud->points.empty())` or when it executes `extract.filter(*remaining_cloud);`)
+
+-  `pcl_geometric_primitives_detector.cpp` never publishes `labeled_obj_info_pub_`
+
+<!-- - `/get_actions` always return empty list (even if the name match with `primitive_taxonomy.yaml`) -> probably related with problem in `affordanceGraph.py` mentioned earlier -->
+
+- error:
+```bash
+[pcd_accumulator_node-6] process has died [pid 247881, exit code -11, cmd /home/ros/catkin_ws/devel/lib/pcl_geometric_primitives_detector/pcd_accumulator.py __name:=pcd_accumulator_node __log:=/home/ros/.ros/log/58b6e06c-9aae-11ef-a0c4-047c16c7bb63/pcd_accumulator_node-6.log].
+log file: /home/ros/.ros/log/58b6e06c-9aae-11ef-a0c4-047c16c7bb63/pcd_accumulator_node-6*.log
+
+```
+
+```bash
+cat /home/ros/.ros/log/58b6e06c-9aae-11ef-a0c4-047c16c7bb63/pcd_accumulator_node-6*.log
+[rospy.client][INFO] 2024-11-04 13:12:06,637: init_node, name[/pcd_accumulator_node], pid[247881]
+[xmlrpc][INFO] 2024-11-04 13:12:06,637: XML-RPC server binding to 0.0.0.0:0
+[xmlrpc][INFO] 2024-11-04 13:12:06,637: Started XML-RPC server [http://user-7D86:42623/]
+[rospy.impl.masterslave][INFO] 2024-11-04 13:12:06,637: _ready: http://user-7D86:42623/
+[rospy.init][INFO] 2024-11-04 13:12:06,637: ROS Slave URI: [http://user-7D86:42623/]
+[rospy.registration][INFO] 2024-11-04 13:12:06,638: Registering with master node http://localhost:11311
+[xmlrpc][INFO] 2024-11-04 13:12:06,638: xml rpc node: starting XML-RPC server
+[rospy.init][INFO] 2024-11-04 13:12:06,738: registered with master
+[rospy.rosout][INFO] 2024-11-04 13:12:06,738: initializing /rosout core topic
+[rospy.rosout][INFO] 2024-11-04 13:12:06,740: connected to core topic /rosout
+[rospy.simtime][INFO] 2024-11-04 13:12:06,740: /use_sim_time is not set, will not subscribe to simulated time [/clock] topic
+[rospy.internal][INFO] 2024-11-04 13:12:06,748: topic[/girona1000/depth_cam/pointcloud] adding connection to [http://user-7D86:37751/], count 0
+[rospy.internal][INFO] 2024-11-04 13:12:06,960: topic[/rosout] adding connection to [/rosout], count 0
+[rospy.internal][INFO] 2024-11-04 13:12:07,401: topic[/girona1000/accumulated_pointcloud] adding connection to [/pcd_compressor_node], count 0
+
+```
+
+
+
+### object_sensing_ACE.py
+- running `object_sensing_ACE.py`, I get:
+
+```bash
+/usr/local/lib/python3.8/dist-packages/sklearn/cluster/_kmeans.py:1416: FutureWarning: The default value of `n_init` will change from 10 to 'auto' in 1.4. Set the value of `n_init` explicitly to suppress the warning
+  super()._check_params_vs_input(X, default_n_init=10)
+/usr/local/lib/python3.8/dist-packages/sklearn/cluster/_kmeans.py:1416: FutureWarning: The default value of `n_init` will change from 10 to 'auto' in 1.4. Set the value of `n_init` explicitly to suppress the warning
+  super()._check_params_vs_input(X, default_n_init=10)
+/usr/local/lib/python3.8/dist-packages/sklearn/cluster/_kmeans.py:1416: FutureWarning: The default value of `n_init` will change from 10 to 'auto' in 1.4. Set the value of `n_init` explicitly to suppress the warning
+  super()._check_params_vs_input(X, default_n_init=10)
+/usr/local/lib/python3.8/dist-packages/sklearn/cluster/_kmeans.py:1416: FutureWarning: The default value of `n_init` will change from 10 to 'auto' in 1.4. Set the value of `n_init` explicitly to suppress the warning
+  super()._check_params_vs_input(X, default_n_init=10)
+/home/ros/catkin_ws/src/bt_ace/pcl_geometric_primitives_detector/scripts/object_sensing_ACE.py:126: UserWarning: Starting a Matplotlib GUI outside of the main thread will likely fail.
+  fig, ax = plt.subplots()
+[INFO] [1730791195.685158]: 2
+/usr/local/lib/python3.8/dist-packages/sklearn/cluster/_kmeans.py:1416: FutureWarning: The default value of `n_init` will change from 10 to 'auto' in 1.4. Set the value of `n_init` explicitly to suppress the warning
+  super()._check_params_vs_input(X, default_n_init=10)
+going to publish object_info
+published object_info
+published object_info
+Number of clusters: 2
+Type of cluster_response.points: <class 'list'>
+Contents of cluster_response.points: [0.00635935366153717, 0.36625563923420534, 1.8783493525273092, -0.005645995367882617, -0.15787988496705066, 1.1834288948812959]
+```
+
+### pcd_accumulator.py
+- error I get running (not sure what triggers is)
+```bash
+[pcd_accumulator_node-6] process has died [pid 13696, exit code -11, cmd /home/ros/catkin_ws/devel/lib/pcl_geometric_primitives_detector/pcd_accumulator.py __name:=pcd_accumulator_node __log:=/home/ros/.ros/log/85952d80-9b4b-11ef-81f2-047c16c7bb63/pcd_accumulator_node-6.log].
+log file: /home/ros/.ros/log/85952d80-9b4b-11ef-81f2-047c16c7bb63/pcd_accumulator_node-6*.log
+```
+```bash
+cat /home/ros/.ros/log/85952d80-9b4b-11ef-81f2-047c16c7bb63/pcd_accumulator_node-6*.log
+[rospy.client][INFO] 2024-11-05 07:57:02,054: init_node, name[/pcd_accumulator_node], pid[13696]
+[xmlrpc][INFO] 2024-11-05 07:57:02,054: XML-RPC server binding to 0.0.0.0:0
+[xmlrpc][INFO] 2024-11-05 07:57:02,054: Started XML-RPC server [http://user-7D86:45665/]
+[rospy.init][INFO] 2024-11-05 07:57:02,055: ROS Slave URI: [http://user-7D86:45665/]
+[rospy.impl.masterslave][INFO] 2024-11-05 07:57:02,055: _ready: http://user-7D86:45665/
+[rospy.registration][INFO] 2024-11-05 07:57:02,055: Registering with master node http://localhost:11311
+[xmlrpc][INFO] 2024-11-05 07:57:02,055: xml rpc node: starting XML-RPC server
+[rospy.init][INFO] 2024-11-05 07:57:02,155: registered with master
+[rospy.rosout][INFO] 2024-11-05 07:57:02,155: initializing /rosout core topic
+[rospy.rosout][INFO] 2024-11-05 07:57:02,157: connected to core topic /rosout
+[rospy.simtime][INFO] 2024-11-05 07:57:02,158: /use_sim_time is not set, will not subscribe to simulated time [/clock] topic
+[rospy.internal][INFO] 2024-11-05 07:57:02,169: topic[/girona1000/depth_cam/pointcloud] adding connection to [http://user-7D86:42365/], count 0
+[rospy.internal][INFO] 2024-11-05 07:57:02,297: topic[/rosout] adding connection to [/rosout], count 0
+[rospy.internal][INFO] 2024-11-05 07:57:02,787: topic[/girona1000/accumulated_pointcloud] adding connection to [/pcd_compressor_node], count 0
+
+```
+- error if I start the mission already close to the `luma_station`:
+```bash
+RROR] [1730790446.173190]: bad callback: <bound method MyOpen3DNode.point_cloud_callback of <__main__.MyOpen3DNode object at 0x7d751776e160>>
+Traceback (most recent call last):
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py", line 750, in _invoke_callback
+    cb(msg)
+  File "/home/ros/catkin_ws/src/bt_ace/pcl_geometric_primitives_detector/scripts/pcd_compressor.py", line 89, in point_cloud_callback
+    reconstructed_point_cloud = self.mesh_to_point_cloud(simplified_mesh)
+  File "/home/ros/catkin_ws/src/bt_ace/pcl_geometric_primitives_detector/scripts/pcd_compressor.py", line 161, in mesh_to_point_cloud
+    return mesh.sample_points_poisson_disk(number_of_points=500)  # Adjust number_of_points
+RuntimeError: [Open3D Error] (std::shared_ptr<open3d::geometry::PointCloud> open3d::geometry::TriangleMesh::SamplePointsPoissonDisk(size_t, double, std::shared_ptr<open3d::geometry::PointCloud>, bool, int)) /home/runner/work/Open3D/Open3D/cpp/open3d/geometry/TriangleMesh.cpp:549: [SamplePointsPoissonDisk] input mesh has no triangles
+
+
+[ERROR] [1730790446.403937]: bad callback: <bound method MyOpen3DNode.point_cloud_callback of <__main__.MyOpen3DNode object at 0x7d751776e160>>
+Traceback (most recent call last):
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py", line 750, in _invoke_callback
+    cb(msg)
+  File "/home/ros/catkin_ws/src/bt_ace/pcl_geometric_primitives_detector/scripts/pcd_compressor.py", line 89, in point_cloud_callback
+    reconstructed_point_cloud = self.mesh_to_point_cloud(simplified_mesh)
+  File "/home/ros/catkin_ws/src/bt_ace/pcl_geometric_primitives_detector/scripts/pcd_compressor.py", line 161, in mesh_to_point_cloud
+    return mesh.sample_points_poisson_disk(number_of_points=500)  # Adjust number_of_points
+RuntimeError: [Open3D Error] (std::shared_ptr<open3d::geometry::PointCloud> open3d::geometry::TriangleMesh::SamplePointsPoissonDisk(size_t, double, std::shared_ptr<open3d::geometry::PointCloud>, bool, int)) /home/runner/work/Open3D/Open3D/cpp/open3d/geometry/TriangleMesh.cpp:549: [SamplePointsPoissonDisk] input mesh has no triangles
+
+
+[ERROR] [1730790446.571722]: bad callback: <bound method MyOpen3DNode.point_cloud_callback of <__main__.MyOpen3DNode object at 0x7d751776e160>>
+Traceback (most recent call last):
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py", line 750, in _invoke_callback
+    cb(msg)
+  File "/home/ros/catkin_ws/src/bt_ace/pcl_geometric_primitives_detector/scripts/pcd_compressor.py", line 89, in point_cloud_callback
+    reconstructed_point_cloud = self.mesh_to_point_cloud(simplified_mesh)
+  File "/home/ros/catkin_ws/src/bt_ace/pcl_geometric_primitives_detector/scripts/pcd_compressor.py", line 161, in mesh_to_point_cloud
+    return mesh.sample_points_poisson_disk(number_of_points=500)  # Adjust number_of_points
+RuntimeError: [Open3D Error] (std::shared_ptr<open3d::geometry::PointCloud> open3d::geometry::TriangleMesh::SamplePointsPoissonDisk(size_t, double, std::shared_ptr<open3d::geometry::PointCloud>, bool, int)) /home/runner/work/Open3D/Open3D/cpp/open3d/geometry/TriangleMesh.cpp:549: [SamplePointsPoissonDisk] input mesh has no triangles
+
+```
+
+
+## BT
+- as soon as cluster is ok, double check `primitive_detection_client.cpp` (especially `max_clouds_`)
+- adjust starting point orientation for when you start circulating around the sphere
+
+
+## IAUV DEMO
+- warning:
+```bash
+[ WARN] [1730981333.372281729]: Could not find a connection between 'world_ned' and 'girona1000/base_link' because they are not part of the same tree.Tf has two or more unconnected trees.
+```
+- kinematic
+
+## General
+- License
+- Cite this work
+- try a clean installation, build and run
