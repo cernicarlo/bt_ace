@@ -1,0 +1,94 @@
+
+<!-- Only circle -->
+<root BTCPP_format="4">
+    <BehaviorTree ID="main_bt">
+        <Sequence name="iauv_girona1000_survey_scan">
+            <LogSequence name="start"    message="mission start" />
+            <!-- Main Path -->
+            <PathRequest type="circular" 
+                            start="2.0;5.0;4.5"  goal="0.0;5.0;5.5" is_to_object="false" 
+                            radius="2.0" survey_type="{survey_type}"/>
+            <FollowPath path_follow_is_completed="false" survey_type="{survey_type}"/>
+        </Sequence>
+    </BehaviorTree>
+</root>
+
+<!-- Only scan -->
+<!-- <root BTCPP_format="4">
+    <BehaviorTree ID="main_bt">
+        <Sequence name="iauv_girona1000_survey_scan">
+            <LogSequence name="start"    message="mission start" />
+            <!-- Main Path -->
+            <PathRequest name="main_path" 
+                            type="scan" 
+                            start="-2.5;-2.0;4.0" goal="0.0;3.0;5.5" is_to_object="false" 
+                            width="10.0" length="5.0" survey_type="{survey_type}"/>
+            <FollowPath path_follow_is_completed="false" survey_type="{survey_type}"/>
+        </Sequence>
+    </BehaviorTree>
+</root> -->
+
+
+
+<!-- Only simple (to LUMA) -->
+<!-- <root BTCPP_format="4">
+    <BehaviorTree ID="main_bt">
+        <Sequence name="iauv_girona1000_survey_scan">
+            <LogSequence name="start"    message="mission start" />
+            <!-- Main Path -->
+            <!-- <PathRequest name="main_path" type="simple" start="-7.5;-3.0;2.25" goal="-10.0;3.0;6.25" is_to_object="false" width="10.0" length="5.0" radius="0.0" survey_type="{survey_type}"/> -->
+            <PathRequest name="main_path" 
+                            type="simple" 
+                            start="-7.5;3.0;2.25" w_start="0.707" z_start="-0.707"
+                            goal="-10.0;3.0;6.25" w_end="0.707" z_end="-0.707"
+                            is_to_object="false" survey_type="{survey_type}"/>
+            <FollowPath path_follow_is_completed="false" survey_type="{survey_type}"/>
+
+        </Sequence>
+    </BehaviorTree>
+</root> -->
+
+
+
+
+
+
+
+<!-- <root BTCPP_format="4">
+    <BehaviorTree ID="main_bt">
+        <Sequence name="iauv_girona1000_survey_scan">
+            <LogSequence name="start"    message="mission start" />
+            <!-- Main Path -->
+            <PathRequest name="main_path" type="scan" start="-2.5;-2.0;5.5" goal="0.0;3.0;5.5" width="10.0" length="5.0" radius="0.0" survey_type="{survey_type}"/>
+            <RetryUntilSuccessful num_attempts="5">
+                <Sequence name="ScanLoop">
+                    <LogSequence name="SetScanPath" message="Setting scan path"/>
+                    <Fallback name="CheckAndInspect">
+                        <!-- If path is clear, proceed to scan path_follow -->
+                        <ReactiveSequence name="ScanInspection">
+                            <isPathClear survey_type="{survey_type}"/>
+                            <FollowPath path_follow_is_completed="{scan_completed}" survey_type="{survey_type}"/>
+                        </ReactiveSequence>
+                        <!-- If path is not clear, perform circular path_follow and retry -->
+                        <ForceFailure>
+                            <Sequence name="CircularInspection">
+                                <LogSequence name="SetCircularPath" message="Setting circular path"/>
+                                <PathRequest type="circular" start="3.0;3.0;5.0" goal="3.0;4.0;3.0" width="0.0" length="0.0" radius="2.0" survey_type="{survey_type}"/>
+                                <FollowPath path_follow_is_completed="false" survey_type="{survey_type}"/>
+                                <LogSequence name="SetCircularPath" message="Setting manually the path to start from where the object is placed"/>
+                                <PathRequest type="scan" start="3.0;4.0;3.0" goal="0.0;6.0;3.0" width="4.0" length="5.0" radius="0.0" survey_type="{survey_type}"/>
+                            </Sequence>
+                        </ForceFailure>
+                    </Fallback>
+                </Sequence>
+            </RetryUntilSuccessful>
+            <LogSequence name="RetryUntilSuccessful" message="RetryUntilSuccessful Success"/>
+        </Sequence>
+    </BehaviorTree>
+</root>  -->
+
+
+
+
+
+

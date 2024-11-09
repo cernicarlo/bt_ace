@@ -1,0 +1,14 @@
+<!-- Only scan -->
+<root BTCPP_format="4">
+    <BehaviorTree ID="main_bt">
+        <Sequence name="iauv_girona1000_survey_scan">
+            <LogSequence name="start"    message="mission start" />
+            <!-- Main Path -->
+            <PathRequest name="main_path" 
+                            type="scan" 
+                            start="-2.5;-2.0;5.0" goal="0.0;3.0;5.5" is_to_object="false" 
+                            width="10.0" length="5.0" survey_type="{survey_type}"/>
+            <FollowPath path_follow_is_completed="false" survey_type="{survey_type}"/>
+        </Sequence>
+    </BehaviorTree>
+</root>

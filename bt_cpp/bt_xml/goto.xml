@@ -1,0 +1,21 @@
+
+<!-- Only simple (to LUMA) -->
+<root BTCPP_format="4">
+    <BehaviorTree ID="main_bt">
+        <Sequence name="iauv_girona1000_survey_scan">
+            <LogSequence name="start"    message="[GOTO] mission start" />
+            <!-- Main Path -->
+            <PathRequest name="main_path" 
+                            type="simple" 
+                            start="{start}"  w_start="0.707" z_start="-0.707"
+                            goal="{goal}" w_end="0.707" z_end="-0.707"
+                            is_to_object="false" survey_type="{survey_type}"/>
+            <FollowPath path_follow_is_completed="false" survey_type="{survey_type}"/>
+        </Sequence>
+    </BehaviorTree>
+</root>
+
+
+
+
+

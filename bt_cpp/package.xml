@@ -1,0 +1,41 @@
+<package format="3">
+  <name>bt_cpp</name>
+  <version>0.1.0</version>
+  <description>BT for ACE</description>
+
+  <maintainer email="cernicchiarocarlo@gmail.com">Carlo Cernicchiaro</maintainer>
+  <license>MIT</license>
+  <author>Carlo Cernicchiaro</author>
+
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>actionlib_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>girona_utils</build_depend>
+  <build_depend>iauv_motion_planner</build_depend>
+  <build_export_depend>actionlib</build_export_depend>
+  <build_export_depend>actionlib_msgs</build_export_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>pcl_geometric_primitives_detector</build_depend>
+  <exec_depend>pcl_geometric_primitives_detector</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>actionlib</exec_depend>
+  <exec_depend>actionlib_msgs</exec_depend>
+  <exec_depend>girona_utils</exec_depend>
+  <exec_depend>iauv_motion_planner</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <depend>behaviortree_cpp</depend>
+  <depend>std_msgs</depend>
+  <!-- <depend>pcl_geometric_primitives_detector</depend> -->
+  
+
+  <export>
+    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
+    <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
+  </export>
+
+</package>

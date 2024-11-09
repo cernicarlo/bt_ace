@@ -1,0 +1,2 @@
+In this folder I left how I modified files in other repo to make it work with `bt_ace` repo.
+Make sure to substitute the files in the other repo (the relative path here is the same of the files meant to be substituted).
