@@ -1,0 +1,18 @@
+objects:
+- name: cylinder
+  actions:
+    - observe
+    - touch
+- name: sphere
+  actions:
+    - observe
+    - manipulate
+- name: sphere
+  actions:
+  - observe
+  - touch
+  - manipulate
+- name: cone
+  actions:
+    - observe
+

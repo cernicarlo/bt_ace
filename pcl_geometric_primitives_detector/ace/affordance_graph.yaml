@@ -1,0 +1,62 @@
+graph:
+  - subject: AUV
+    target: DepthCamera
+    action: has
+  - subject: DepthCamera
+    target: clearWater
+    action: can be used in
+  - subject: DepthCamera
+    target: Object
+    action: can observe  # "observe" from the taxonomy will specify what can be observed
+  - subject: AUV
+    target: Arm
+    action: has
+  - subject: Arm
+    target: Object
+    action: can manipulate  # "manipulate" derived from taxonomy
+  - subject: Arm
+    target: Object
+    action: can touch
+  - subject: Sonar
+    target: turbidWater
+    action: can be used in
+  - subject: AUV
+    target: Sonar
+    action: has
+  - subject: AUV
+    target: Battery
+    action: has
+  - subject: Battery
+    target: Sensor
+    action: has energy for
+  - subject: Battery
+    target: Thrusters
+    action: has energy for
+  - subject: Thrusters
+    target: Motion
+    action: allows
+  - subject: AUV
+    target: Thrusters
+    action: has
+  - subject: Battery
+    target: Arm
+    action: has energy for
+  - subject: DepthCamera
+    target: Sensor
+    action: is
+  - subject: Sonar
+    target: Sensor
+    action: is
+  - subject: Sonar
+    target: Survey
+    action: allows
+  - subject: DepthCamera
+    target: Survey
+    action: allows
+  - subject: AUV
+    target: Survey
+    action: allows
+  - subject: AUV
+    target: Sphere
+    action: observe
+

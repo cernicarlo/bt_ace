@@ -1,0 +1,24 @@
+<launch>
+    <!-- Set the mission_file parameter -->
+    <param name="mission_file" value="$(find pcl_geometric_primitives_detector)/ace/mission.txt" />
+    <!-- Set affordance graph file parameter -->
+    <param name="affordance_graph" value="$(find pcl_geometric_primitives_detector)/ace/affordance_graph.yaml" />
+    <!-- Set taxonomy file parameter -->
+    <param name="taxonomy" value="$(find pcl_geometric_primitives_detector)/ace/primitive_taxonomy.yaml" />
+
+    <!-- Run affordanceGraphN.py -->
+    <node name="affordance_graph_node" pkg="pcl_geometric_primitives_detector" type="affordanceGraphN.py" output="screen" />
+
+    <!-- Run marker_llm.py -->
+    <node name="marker_llm_node" pkg="pcl_geometric_primitives_detector" type="marker_llm.py" output="screen" />
+
+    <!-- Run object_sensing_ACE.py -->
+    <node name="object_sensing_ace_node" pkg="pcl_geometric_primitives_detector" type="object_sensing_ACE.py" output="screen" />
+   
+       <!-- Run operator_label_2_obj_label.py -->
+    <node name="operator_label_2_obj_label" pkg="pcl_geometric_primitives_detector" type="operator_label_2_obj_label.py" output="screen" /> 
+    
+    <!-- Run pcd_compressor.py -->
+    <node name="pcd_compressor_node" pkg="pcl_geometric_primitives_detector" type="pcd_compressor.py" output="screen" />
+
+</launch>

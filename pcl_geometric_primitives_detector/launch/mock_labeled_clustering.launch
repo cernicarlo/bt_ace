@@ -1,0 +1,7 @@
+<launch>
+    <!-- Run the label_obj_pub_mock node -->
+    <node pkg="pcl_geometric_primitives_detector" type="label_obj_pub_mock.py" name="label_obj_pub_mock" output="screen" />
+
+    <!-- Run the get_actions_mock node -->
+    <node pkg="pcl_geometric_primitives_detector" type="get_actions_mock.py" name="get_actions_mock" output="screen" />
+</launch>

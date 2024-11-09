@@ -1,0 +1,6 @@
+string subject
+string target
+string action
+---
+bool success
+
