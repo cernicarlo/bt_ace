@@ -26,9 +26,9 @@
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
+#include <pcl_geometric_primitives_detector/LabeledObjInfo.h>  
 #include <utility>
-#include <pcl_geometric_primitives_detector/ClusterObjInfo.h>
-#include <pcl_geometric_primitives_detector/LabeledObjInfo.h>
+
 
 typedef pcl::PointXYZ PointT;
 
@@ -206,61 +206,78 @@ double pointToConeDistance(const pcl::PointXYZ& point, const pcl::ModelCoefficie
 
 
     // Iteratively fit planes and return the inliers for publishing
-std::tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, double, std::string> detectPlanes(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud)
+std::pair<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, double> detectPlanes(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud)
 {
     pcl::PointCloud<pcl::PointXYZ>::Ptr remaining_cloud = downsample(cloud);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_planes_cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
     double total_fitness_score = 0.0; // Total fitness score
 
     int plane_count = 0;
-while (!remaining_cloud->points.empty())
-{
-    // Fit a plane using RANSAC
-    pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
-    pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
-    pcl::SACSegmentation<pcl::PointXYZ> seg;
-    seg.setOptimizeCoefficients(true);
-    seg.setModelType(pcl::SACMODEL_PLANE);
-    seg.setMethodType(pcl::SAC_RANSAC);
-    seg.setDistanceThreshold(0.01);
-    seg.setInputCloud(remaining_cloud);
-    seg.segment(*inliers, *coefficients);
-
-    if (inliers->indices.empty())
+    while (!remaining_cloud->points.empty())
     {
-        std::cout << "No more planes detected." << std::endl;
-        break;  // Exit loop if no inliers are found
+        // Fit a plane using RANSAC
+        pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
+        pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+        pcl::SACSegmentation<pcl::PointXYZ> seg;
+        seg.setOptimizeCoefficients(true);
+        seg.setModelType(pcl::SACMODEL_PLANE);
+        seg.setMethodType(pcl::SAC_RANSAC);
+        seg.setDistanceThreshold(0.01); // Adjust this value if necessary
+        seg.setInputCloud(remaining_cloud);
+        seg.segment(*inliers, *coefficients);
+
+        if (inliers->indices.empty())
+        {
+            std::cout << "No more planes detected." << std::endl;
+            break;
+        }
+
+        std::cout << "Detected Plane: " << plane_count + 1 << " Coefficients: "
+                  << coefficients->values[0] << " " << coefficients->values[1] << " "
+                  << coefficients->values[2] << " " << coefficients->values[3] << std::endl;
+
+        // Calculate fitness score for this plane
+        double fitness_score = 0.0;
+        for (int index : inliers->indices)
+        {
+            fitness_score += pointToPlaneDistance(remaining_cloud->points[index], *coefficients);
+        }
+        fitness_score /= inliers->indices.size(); // Average distance
+        total_fitness_score += fitness_score;
+
+        // Generate a unique color for each plane
+        uint8_t r, g, b;
+        std::tie(r, g, b) = generateColor(plane_count);  // Generate color for each plane
+
+        // Extract inliers (points forming the detected plane)
+        pcl::ExtractIndices<pcl::PointXYZ> extract;
+        extract.setInputCloud(remaining_cloud);
+        extract.setIndices(inliers);
+        extract.setNegative(false);  // Keep only inliers
+        pcl::PointCloud<pcl::PointXYZ>::Ptr plane(new pcl::PointCloud<pcl::PointXYZ>());
+        extract.filter(*plane);
+
+        // Color the points and add them to the final colored planes cloud
+        for (const auto& point : plane->points)
+        {
+            pcl::PointXYZRGB colored_point;
+            colored_point.x = point.x;
+            colored_point.y = point.y;
+            colored_point.z = point.z;
+            colored_point.r = r;
+            colored_point.g = g;
+            colored_point.b = b;
+            colored_planes_cloud->points.push_back(colored_point);
+        }
+
+        // Remove inliers from remaining cloud for the next iteration
+        extract.setNegative(true);  // Remove inliers from remaining cloud
+        extract.filter(*remaining_cloud);
+
+        plane_count++;  // Increment the plane counter
     }
 
-    // Process inliers and remaining points
-    pcl::ExtractIndices<pcl::PointXYZ> extract;
-    extract.setInputCloud(remaining_cloud);
-    extract.setIndices(inliers);
-    extract.setNegative(false);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr plane(new pcl::PointCloud<pcl::PointXYZ>());
-    extract.filter(*plane);
-
-    // Remove inliers from remaining cloud
-    extract.setNegative(true);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr temp_cloud(new pcl::PointCloud<pcl::PointXYZ>());
-    extract.filter(*temp_cloud);
-    remaining_cloud = temp_cloud;
-
-    if (remaining_cloud->points.empty())
-    {
-        std::cout << "No more points left in remaining cloud." << std::endl;
-        break;  // Exit if no points remain
-    }
-
-    plane_count++;
-}
-
-
-    std::string label = "";
-    if(plane_count==6){
-       label="box";
-    }
-    return std::make_tuple(colored_planes_cloud, total_fitness_score, label); // Return triplet
+    return {colored_planes_cloud, total_fitness_score}; // Return colored planes and total fitness score
 }
 
 
@@ -441,117 +458,133 @@ std::pair<pcl::PointCloud<pcl::PointXYZ>::Ptr, double> detectCones(const pcl::Po
     return {cones_cloud, fitness_score}; // Return cones and fitness score
 }
 
+
 };
 
-class PrimitiveDetectionNode {
+
+
+class PrimitiveDetectionNode
+{
 public:
-    PrimitiveDetectionNode(ros::NodeHandle& nh) {
-        // Initialize the subscriber
-        subscription_ = nh.subscribe("/clustered_point_cloud", 10, &PrimitiveDetectionNode::pointCloudCallback, this);
-        
-        // Initialize the publishers
-        planes_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("planes", 10);
-        spheres_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("spheres", 10);
-        cylinders_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("cylinders", 10);
-        cones_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("cones", 10);
-        labeled_obj_info_pub_ = nh.advertise<pcl_geometric_primitives_detector::LabeledObjInfo>("/labeled_obj_info",10);
-        
-        // Initialize the primitive detector
+    PrimitiveDetectionNode(ros::NodeHandle& nh)
+    {
+        // Initialize subscriptions and publishers
+        for (int i = 0; i < 10; ++i) {
+            std::string topic_name = "/cluster_" + std::to_string(i);
+            ros::Subscriber sub = nh.subscribe(topic_name, 10, 
+                &PrimitiveDetectionNode::pointCloudCallback, this, i);
+            subscriptions_.push_back(sub);
+        }
+
+        planes_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("/planes", 10);
+        spheres_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("/spheres", 10);
+        cylinders_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("/cylinders", 10);
+        cones_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("/cones", 10);
+
         primitive_detector_ = std::make_shared<PrimitiveDetector>();
     }
 
-private:
-    void pointCloudCallback(const pcl_geometric_primitives_detector::ClusterObjInfo::ConstPtr& msg)
+    void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr& msg, int i)
     {
+        ROS_INFO("Processing Cluster: %d", i);
+
         // Convert PointCloud2 to PCL point cloud
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
-        pcl::fromROSMsg(msg->clustered_pointcloud, *cloud);
+        pcl::fromROSMsg(*msg, *cloud);
 
-        // Detect planes and get their inliers
-        auto [planes_cloud, planes_fitness_score,p_label] = primitive_detector_->detectPlanes(cloud);
+        // Detect primitives
+        auto [planes_cloud, planes_fitness_score, plane_count] = primitive_detector_->detectPlanes(cloud);
         auto [spheres_cloud, spheres_fitness_score] = primitive_detector_->detectSpheres(cloud);
         auto [cylinders_cloud, cylinders_fitness_score] = primitive_detector_->detectCylinders(cloud);
         auto [cones_cloud, cones_fitness_score] = primitive_detector_->detectCones(cloud);
 
-        // Publish detected planes as a new PointCloud2 message
-        sensor_msgs::PointCloud2 output_planes_msg;
-        pcl::toROSMsg(*planes_cloud, output_planes_msg);
-        output_planes_msg.header.frame_id = msg->clustered_pointcloud.header.frame_id;  // Set the frame ID to match the input
-        planes_publisher_.publish(output_planes_msg);
+        // Identify the shape with the lowest fitness score
+        std::string label;
+        pcl::PointCloud<pcl::PointXYZ>::Ptr best_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+        double lowest_score = std::numeric_limits<double>::max();
 
-        // Publish detected spheres as a new PointCloud2 message
-        sensor_msgs::PointCloud2 output_spheres_msg;
-        pcl::toROSMsg(*spheres_cloud, output_spheres_msg);
-        output_spheres_msg.header.frame_id = msg->clustered_pointcloud.header.frame_id;  // Set the frame ID to match the input
-        spheres_publisher_.publish(output_spheres_msg);
+        if (planes_fitness_score < lowest_score) {
+            label = "Plane";
+            if (plane_count == 6) {
+                label = "Box";
+            }
+            lowest_score = planes_fitness_score;
+            pcl::copyPointCloud(*planes_cloud, *best_cloud);
+        }
+        if (spheres_fitness_score < lowest_score) {
+            label = "Sphere";
+            lowest_score = spheres_fitness_score;
+            pcl::copyPointCloud(*spheres_cloud, *best_cloud);
+        }
+        if (cylinders_fitness_score < lowest_score) {
+            label = "Cylinder";
+            lowest_score = cylinders_fitness_score;
+            pcl::copyPointCloud(*cylinders_cloud, *best_cloud);
+        }
+        if (cones_fitness_score < lowest_score) {
+            label = "Cone";
+            lowest_score = cones_fitness_score;
+            pcl::copyPointCloud(*cones_cloud, *best_cloud);
+        }
 
-        // Publish detected cylinders as a new PointCloud2 message
-        sensor_msgs::PointCloud2 output_cylinders_msg;
-        pcl::toROSMsg(*cylinders_cloud, output_cylinders_msg);
-        output_cylinders_msg.header.frame_id = msg->clustered_pointcloud.header.frame_id;  // Set the frame ID to match the input
-        cylinders_publisher_.publish(output_cylinders_msg);
+        // Compute centroid and surface point
+        geometry_msgs::Point centroid, surface_point;
+        if (best_cloud->points.empty()) {
+            ROS_ERROR("No points in the selected cluster!");
+            return;
+        }
 
-        // Publish detected cylinders as a new PointCloud2 message
-        sensor_msgs::PointCloud2 output_cone_msg;
-        pcl::toROSMsg(*cones_cloud, output_cone_msg);
-        output_cone_msg.header.frame_id = msg->clustered_pointcloud.header.frame_id;  // Set the frame ID to match the input
-        cones_publisher_.publish(output_cone_msg);
-        
-        pcl_geometric_primitives_detector::LabeledObjInfo labeled_obj_msg;
-        labeled_obj_msg.clustered_pointcloud=msg->clustered_pointcloud;
-        labeled_obj_msg.centroid=msg->centroid;
-        labeled_obj_msg.surface_point=msg->surface_point;
-        
-        
+        // Calculate centroid
+        Eigen::Vector4f centroid_eigen;
+        pcl::compute3DCentroid(*best_cloud, centroid_eigen);
+        centroid.x = centroid_eigen[0];
+        centroid.y = centroid_eigen[1];
+        centroid.z = centroid_eigen[2];
 
-        // Print fitness scores
-        std::cout << "Total Fitness Score for Planes: " << planes_fitness_score << std::endl;
-        std::cout << "Fitness Score for Spheres: " << spheres_fitness_score << std::endl;
-        std::cout << "Fitness Score for Cylinders: " << cylinders_fitness_score << std::endl;
-        std::cout << "Fitness Score for Cones: " << cones_fitness_score << std::endl;
-        
-    // double lowest_score = std::min({planes_fitness_score, spheres_fitness_score, cylinders_fitness_score, cones_fitness_score});
-    std::array<double, 4> scores = {planes_fitness_score, spheres_fitness_score, cylinders_fitness_score, cones_fitness_score};
-    double lowest_score = *std::min_element(scores.begin(), scores.end());
+        // Choose a representative surface point (first point in the cloud)
+        surface_point.x = best_cloud->points[0].x;
+        surface_point.y = best_cloud->points[0].y;
+        surface_point.z = best_cloud->points[0].z;
 
-    // Determine the label for the lowest score
-    std::string lowest_score_label;
-    if (lowest_score == planes_fitness_score) {
-        lowest_score_label = "Plane";
-        if(p_label=="box")
-           lowest_score_label="box";
-    } else if (lowest_score == spheres_fitness_score) {
-        lowest_score_label = "Sphere";
-    } else if (lowest_score == cylinders_fitness_score) {
-        lowest_score_label = "Cylinder";
-    } else if (lowest_score == cones_fitness_score) {
-        lowest_score_label = "Cone";
+        // Populate LabelObjInfo message
+        pcl_geometric_primitives_detector::LabeledObjInfo label_msg;
+        label_msg.label = label;
+        label_msg.centroid = centroid;
+        label_msg.surface_point = surface_point;
+
+        // Convert PCL cloud to PointCloud2 for the message
+        pcl::toROSMsg(*best_cloud, label_msg.clustered_pointcloud);
+        label_msg.clustered_pointcloud.header.frame_id = msg->header.frame_id;
+
+        // Publish the labeled cluster
+        std::string topic_name = "/labelled_cluster_" + std::to_string(i);
+        ros::Publisher label_publisher = nh_.advertise<pcl_geometric_primitives_detector::LabeledObjInfo>(topic_name, 10);
+        label_publisher.publish(label_msg);
+
+        // Log details
+        ROS_INFO("Label: %s", label.c_str());
+        ROS_INFO("Centroid: (%f, %f, %f)", centroid.x, centroid.y, centroid.z);
+        ROS_INFO("Surface Point: (%f, %f, %f)", surface_point.x, surface_point.y, surface_point.z);
     }
-    
-    labeled_obj_msg.label=lowest_score_label;
 
-    }
-
-
-    ros::Subscriber subscription_;
+private:
+    ros::NodeHandle nh_;
+    std::vector<ros::Subscriber> subscriptions_;
     ros::Publisher planes_publisher_;
     ros::Publisher spheres_publisher_;
     ros::Publisher cylinders_publisher_;
     ros::Publisher cones_publisher_;
-    ros::Publisher labeled_obj_info_pub_;
     std::shared_ptr<PrimitiveDetector> primitive_detector_;
 };
 
-
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
     ros::init(argc, argv, "primitive_detection_node");
     ros::NodeHandle nh;
 
     PrimitiveDetectionNode node(nh);
 
-    // Spin to process callbacks
     ros::spin();
-    
+
     return 0;
 }
-
