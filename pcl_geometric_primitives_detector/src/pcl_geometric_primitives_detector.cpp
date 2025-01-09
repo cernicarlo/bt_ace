@@ -487,7 +487,12 @@ public:
     void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr& msg, int i)
     {
         ROS_INFO("Processing Cluster: %d", i);
+        if (label_publishers_.find(i) == label_publishers_.end()) {
+            std::string topic_name = "/labelled_cluster_" + std::to_string(i);
+            label_publishers_[i] = nh_.advertise<pcl_geometric_primitives_detector::LabeledObjInfo>(topic_name, 10);
+        }
 
+        auto& label_publisher = label_publishers_[i];
         // Convert PointCloud2 to PCL point cloud
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
         pcl::fromROSMsg(*msg, *cloud);
@@ -556,9 +561,6 @@ public:
         pcl::toROSMsg(*best_cloud, label_msg.clustered_pointcloud);
         label_msg.clustered_pointcloud.header.frame_id = msg->header.frame_id;
 
-        // Publish the labeled cluster
-        std::string topic_name = "/labelled_cluster_" + std::to_string(i);
-        ros::Publisher label_publisher = nh_.advertise<pcl_geometric_primitives_detector::LabeledObjInfo>(topic_name, 10);
         label_publisher.publish(label_msg);
 
         // Log details
@@ -575,6 +577,7 @@ private:
     ros::Publisher cylinders_publisher_;
     ros::Publisher cones_publisher_;
     std::shared_ptr<PrimitiveDetector> primitive_detector_;
+     std::map<int, ros::Publisher> label_publishers_;
 };
 
 int main(int argc, char** argv)
