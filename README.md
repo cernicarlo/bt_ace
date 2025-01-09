@@ -18,6 +18,7 @@ Repository for automated mission of Girona 1000 with robotic arm to scan and col
 - `pcl_geometric_primitives_detector` package
 
 ## Installation
+- Install this stonefish_version: https://github.com/Michele1996/stonefish/tree/vlc_dev (documentation at: https://stonefish.readthedocs.io/)
 - Once you install ROS Noetic, create a workspace (eg. `~/catkin_ws`) following ROS instructions for ws creation (either `catkin_make` or `catkin init`)
 
 ### PCL geometric primitives detecor
