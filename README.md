@@ -43,6 +43,7 @@ Repository for automated mission of Girona 1000 with robotic arm to scan and col
 * install open3d (`pip install open3d`)
 * install yaml (`pip install pyyaml`)
 * install tkinter (`pip install tkinter`)
+* install openai (`pip install openai`)
 
 ### IAUV Girona 1000 use case
 1. To ensure compatibility, clone the dependencies at the specified versions. Navigate to the `src` directory of your Catkin workspace and clone all the needed repositories:
