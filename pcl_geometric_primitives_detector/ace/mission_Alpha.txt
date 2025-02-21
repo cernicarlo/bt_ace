@@ -1,0 +1,2 @@
+Mission: Alpha should do a survey. Then, once finished should go to communicate with the operator using its VLC and the VLC posed on a structure and connected with human operator. 
+Then wait for the operator to send an order.
