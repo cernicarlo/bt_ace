@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-
-
 import rospy
 from std_srvs.srv import Empty
 import tkinter as tk
 from tkinter import simpledialog
 import graphviz
 import yaml
-from pcl_geometric_primitives_detector.srv import AddObject, AddAffordance, ExportGraph, CreateGUI, DisplayGraph, DisplayGraphResponse, CheckRelation, GetActions, GetActionsResponse
+from pcl_geometric_primitives_detector.srv import AddObject, AddAffordance, ExportGraph, CreateGUI, DisplayGraph, CheckRelation, QueryFullGraph, GetTaxonomy
 from std_srvs.srv import Trigger, TriggerResponse
 
 class Graph:
@@ -29,108 +27,6 @@ class Graph:
                 return True
         return False
  
- 
-    def has_recursive_relation(self, subject, target, action, visited=None):
-        """
-        Recursively check if a relation exists between subject and target for a given action.
-        
-        Parameters:
-        - subject: The initial subject in the graph (starting from AUV).
-        - target: The target object to check the action against.
-        - action: The action we want to verify.
-        - visited: Set to keep track of visited nodes and prevent cycles.
-        
-        Returns:
-        - True if the action is allowed (directly or indirectly), False otherwise.
-        """
-        if visited is None:
-            visited = set()
-        
-        # Direct check
-        if self.has_relation(subject, target, action):
-            return True
-        
-        # Mark this subject as visited to avoid cycles
-        visited.add(subject)
-        
-        # Get all outgoing relations from the current subject
-        for relation in self.get_outgoing_relations(subject):
-            intermediate_target = relation['target']
-            intermediate_action = relation['action']
-            
-            # If an intermediate action matches or leads to the desired action, continue recursively
-            if intermediate_action == action or (intermediate_target not in visited and self.has_recursive_relation(intermediate_target, target, action, visited)):
-                return True
-
-        # If no valid path was found
-        return False
- 
- 
-    def get_outgoing_relations(self, subject):
-        """
-        Retrieve all outgoing relations from a given subject node.
-
-        Parameters:
-        - subject: The node for which outgoing relations are requested.
-
-        Returns:
-        - List of dictionaries, each representing an outgoing relation with keys:
-          'target' (the destination node) and 'action' (the action taken).
-        """
-        outgoing_relations = []
-        for edge in self.edges:
-            edge_subject, edge_target, edge_action = edge
-            if edge_subject == subject:
-                outgoing_relations.append({'target': edge_target, 'action': edge_action})
-        return outgoing_relations
- 
-       
-    def validate_mission(self, mission_file):
-        """
-        Validates a mission file by checking each action against the affordance graph.
-        """
-        try:
-            # Open and read the mission file
-            with open(mission_file, 'r') as file:
-                mission_lines = file.readlines()
-
-            for line in mission_lines:
-                line = line.strip()
-                if not line:
-                    continue
-
-                # Parse each mission line in the format "Subject do Action" or "Subject look at Target"
-                parts = line.split()
-                
-                if parts[1] == "do":  # Example: "AUV do Survey"
-                    subject = parts[0]
-                    action = "allows"
-                    target = parts[2]
-
-                elif parts[1] == "look_at":  # Example: "AUV look_at Sphere"
-                    subject = parts[0]
-                    action = "observe"  # Map "look at" to "observe" as per affordance graph terminology
-                    target = parts[2]
-                    rospy.set_param('/target', target)
-
-                else:
-                    rospy.logerr(f"Invalid mission format: {line}")
-                    return False
-
-                # Check the required relation in the graph
-                if not self.has_relation(subject, target, action):
-                    rospy.logwarn(f"Mission validation failed: '{subject} {action} {target}' is not possible.")
-                    return False
-
-            rospy.loginfo("Mission validated successfully!")
-            return True
-
-        except FileNotFoundError:
-            rospy.logerr("Mission file not found: {}".format(mission_file))
-            return False
-        except Exception as e:
-            rospy.logerr("Error validating mission file: {}".format(e))
-            return False
     
     @classmethod
     def read_graph_from_yaml(cls, file_path):
@@ -286,62 +182,53 @@ def handle_export_graph(req, graph):
         rospy.logerr("Failed to handle export graph service request: {}".format(e))
         return ExportGraphResponse(success=False)
 
-def handle_validate_mission(req, graph):
-    """
-    Service handler to validate the mission file.
-    """
-    # Assume mission file path is set as a parameter or hard-coded here
-    mission_file = rospy.get_param('/mission_file')
-    
-    rospy.loginfo("Validating mission from file: {}".format(mission_file))
-    
-    if graph.validate_mission(mission_file):
-        return TriggerResponse(success=True, message="Mission validated successfully. All requirements met.")
-    else:
-        return TriggerResponse(success=False, message="Mission validation failed. Requirements not met.")
-   
-   
-def load_taxonomy(file_path):
-    """
-    Load the taxonomy from a YAML file.
-    Returns a dictionary with object names as keys and their actions as lists of strings.
-    """
-    with open(file_path, 'r') as file:
-        data = yaml.safe_load(file)
-    taxonomy_data = {obj['name']: obj['actions'] for obj in data['objects']}
-    return taxonomy_data
-
-
-
-def handle_get_actions(req, graph, taxonomy):
-    """
-    Service handler for retrieving possible actions for an object.
-    
-    Parameters:
-    - req: The request object containing the label (object name).
-    - graph: The affordance graph instance.
-    - taxonomy: Dictionary with object actions from taxonomy.
-    
-    Returns:
-    - GetActionsResponse with a list of possible actions for the object.
-    """
-
-    label = req.label
-    possible_actions = []
-
-    # Check if the object exists in the taxonomy
-    if label in taxonomy:
-        # Get the actions allowed by the taxonomy for this object
-        object_actions = taxonomy[label]
+    # New handler for querying the full graph
+ def handle_query_graph(req, graph, response):
+        response.nodes = list(graph.nodes)
         
-        # Verify each action in the context of the affordance graph, allowing recursive checks
-        for action in object_actions:
-            if graph.has_recursive_relation('AUV', label, action):
-                possible_actions.append(action)
-    
-    # Return the list of possible actions as response
-    return GetActionsResponse(actions=possible_actions)
+        # Collect the edges as three separate lists (subject, target, action)
+        subject_list = []
+        target_list = []
+        action_list = []
+        
+        for edge in self.graph.edges:
+            subject, target, action = edge
+            subject_list.append(subject)
+            target_list.append(target)
+            action_list.append(action)
+        
+        response.subject = subject_list
+        response.target = target_list
+        response.action = action_list
+        
+        return response
 
+def handle_get_taxonomy(request, graph,response):
+        """
+        Service handler to return taxonomy data.
+        """
+        response.object_names = list(taxonomy_data.keys())
+        response.actions = []
+        response.action_offsets = []
+
+        offset = 0
+        for obj in response.object_names:
+            response.actions.extend(self.taxonomy_data[obj])
+            response.action_offsets.append(offset)
+            offset = len(response.actions)
+
+        return response   
+   
+
+ def load_taxonomy(self,file_path):
+        """
+        Load the taxonomy from a YAML file.
+        Returns a dictionary with object names as keys and their actions as lists of strings.
+        """
+        with open(file_path, 'r') as file:
+             data = yaml.safe_load(file)
+             self.taxonomy_data = {obj['name']: obj['actions'] for obj in data['objects']}
+             print(self.taxonomy_data)
    
     
 def gui_service(graph):
@@ -349,8 +236,8 @@ def gui_service(graph):
     rospy.Service('display_gui', Empty, lambda req: handle_gui_request(req, graph))
     rospy.Service("display_graph", DisplayGraph, lambda req: handle_display_graph(req, graph))
     rospy.Service("query", CheckRelation, lambda req: handle_check_relation(req, graph))
-    rospy.Service("validate_mission", Trigger, lambda req: handle_validate_mission(req, graph))
-    rospy.Service("get_actions", GetActions, lambda req: handle_get_actions(req, graph, taxonomy))
+    rospy.Service("query_full_graph", QueryFullGraph, lambda req: handle_check_relation(req, graph,response))
+    rospy.Service("get_taxonomy", GetTaxonomy, lambda req: handle_check_relation(req, graph,response))
     rospy.loginfo("GUI service is ready.")
     rospy.spin()
 

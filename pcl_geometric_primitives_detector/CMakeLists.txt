@@ -35,6 +35,8 @@ add_service_files(
   DisplayGraph.srv
   CheckRelation.srv
   GetActions.srv
+  GetTaxonomy.srv
+  QueryFullGraph.Srv
 )
 
 
@@ -88,6 +90,7 @@ catkin_install_python(PROGRAMS
   scripts/label_obj_pub_mock.py
   scripts/get_actions_mock.py
   scripts/store_pointcloud.py
+  scripts/llm_bt_ros1.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

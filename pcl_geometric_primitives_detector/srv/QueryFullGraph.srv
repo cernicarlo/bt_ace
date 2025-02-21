@@ -1,0 +1,8 @@
+---
+# Response: Returns all nodes and edges of the graph.
+# Nodes as a list of strings and edges as a list of triplets (subject, target, action)
+string[] nodes
+string[] subject
+string[] target
+string[] action
+
