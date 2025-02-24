@@ -1,0 +1,8 @@
+<root BTCPP_format="4">
+    <BehaviorTree ID="main_bt">
+        <Sequence name="iauv_girona1000_survey_scan">
+            <LogSequence name="start" message="[MANIP] mission start" />
+            <LogSequence name="end" message="[MANIP] mission end" />
+        </Sequence>
+    </BehaviorTree>
+</root>

@@ -1,16 +1,66 @@
-# Bitbucket repositories
-repo https://bitbucket.org/udg_cirs/blueprintlab_reachbravo7_manipulator_description.git 801192185c81bc0d7a272581040603dc6822ab83
-repo https://bitbucket.org/iquarobotics/cola2_core.git 59390157aa1a7dab61f11903d6cf7837adc6b551
-repo https://bitbucket.org/udg_cirs/cola2_girona1000.git 6b2261501f2e8d339de57acd192d61cb83beee60
-repo https://bitbucket.org/iquarobotics/cola2_lib.git 1b664c201ad9e4f3d8166b099db01410d3a62fb6
-repo https://bitbucket.org/iquarobotics/cola2_lib_ros.git b83bc3edc8dc3eafdd5f9ec2efbf7444c9258b97
-repo https://bitbucket.org/iquarobotics/cola2_msgs.git 0c4d20d740aeb408f72e7885fb4b254918a7487a
-repo https://bitbucket.org/iquarobotics/cola2_stonefish.git 7812f0f92348ae21b3ce98aa2836412ce4c028bf
-repo https://bitbucket.org/udg_cirs/girona1000_description.git ce94a904a1b8bb1f0585f3fce231bbd3d51c2281
+repositories:
+  blueprintlab_reachbravo7_manipulator_description:
+    type: git
+    url: https://bitbucket.org/udg_cirs/blueprintlab_reachbravo7_manipulator_description.git
+    version: 801192185c81bc0d7a272581040603dc6822ab83
 
-# GitHub repositories with specific branch/commit where known
-repo https://github.com/GitSRealpe/girona_utils.git 897badeacc6182d5332a255a2d2ddaf4ca7b9ced
-repo https://github.com/Michele1996/stonefish.git e0de2657b1ef22efca1ab976cbcc9e007ac0231c
-repo https://github.com/Michele1996/stonefish_ros.git 5755c841e462cd255fdfe6fdac7e52ea7333ae5a
-repo https://github.com/GitSRealpe/iauv_demo.git 4848c8fe560a5b6e492adde968dbb2573105e5b6
-repo https://github.com/BehaviorTree/BehaviorTree.CPP.git 1fcb624d4d7b9d1f357378b20ff19bdcc3853cea
+  cola2_core:
+    type: git
+    url: https://bitbucket.org/iquarobotics/cola2_core.git
+    version: 59390157aa1a7dab61f11903d6cf7837adc6b551
+
+  cola2_girona1000:
+    type: git
+    url: https://bitbucket.org/udg_cirs/cola2_girona1000.git
+    version: 6b2261501f2e8d339de57acd192d61cb83beee60
+
+  cola2_lib:
+    type: git
+    url: https://bitbucket.org/iquarobotics/cola2_lib.git
+    version: 1b664c201ad9e4f3d8166b099db01410d3a62fb6
+
+  cola2_lib_ros:
+    type: git
+    url: https://bitbucket.org/iquarobotics/cola2_lib_ros.git
+    version: b83bc3edc8dc3eafdd5f9ec2efbf7444c9258b97
+
+  cola2_msgs:
+    type: git
+    url: https://bitbucket.org/iquarobotics/cola2_msgs.git
+    version: 0c4d20d740aeb408f72e7885fb4b254918a7487a
+
+  cola2_stonefish:
+    type: git
+    url: https://bitbucket.org/iquarobotics/cola2_stonefish.git
+    version: c7c85e7537247627ccb688f9f6c21688e1f7196e
+
+  girona1000_description:
+    type: git
+    url: https://bitbucket.org/udg_cirs/girona1000_description.git
+    version: ce94a904a1b8bb1f0585f3fce231bbd3d51c2281
+
+  girona_utils:
+    type: git
+    url: https://github.com/GitSRealpe/girona_utils.git
+    version: 897badeacc6182d5332a255a2d2ddaf4ca7b9ced
+
+  stonefish:
+    type: git
+    url: https://github.com/Michele1996/stonefish.git
+    version: e0de2657b1ef22efca1ab976cbcc9e007ac0231c
+
+  stonefish_ros:
+    type: git
+    url: https://github.com/Michele1996/stonefish_ros.git
+    version: 5755c841e462cd255fdfe6fdac7e52ea7333ae5a
+
+  iauv_demo:
+    type: git
+    url: https://github.com/GitSRealpe/iauv_demo.git
+    version: 4848c8fe560a5b6e492adde968dbb2573105e5b6
+
+  BehaviorTree.CPP:
+    type: git
+    url: https://github.com/BehaviorTree/BehaviorTree.CPP.git
+    version: 1fcb624d4d7b9d1f357378b20ff19bdcc3853cea
+
