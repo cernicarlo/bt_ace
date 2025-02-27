@@ -21,6 +21,10 @@ Repository for automated mission of Girona 1000 with robotic arm to scan and col
 - Install this stonefish version: https://github.com/Michele1996/stonefish/tree/vlc_dev (documentation at: https://stonefish.readthedocs.io/)
 - Once you install ROS Noetic, create a workspace (eg. `~/catkin_ws`) following ROS instructions for ws creation (either `catkin_make` or `catkin init`)
 
+```bash
+sudo apt install git python3-pip python3-vcstool python3-tk python3-opencv libusb-1.0-0-dev libfcl-dev
+```
+
 ### PCL geometric primitives detecor
 * before starting, install [PCL 1.14](https://github.com/PointCloudLibrary/pcl/releases/tag/pcl-1.14.1) manually. [Here](https://pcl.readthedocs.io/projects/tutorials/en/latest/compiling_pcl_posix.html) more info.
 
@@ -42,18 +46,17 @@ Repository for automated mission of Girona 1000 with robotic arm to scan and col
 * install graphviz (`pip install graphviz`)
 * install open3d (`pip install open3d`)
 * install yaml (`pip install pyyaml`)
-* install tkinter (`pip install tkinter`)
 * install openai (`pip install openai`)
+* one command line: `pip install groq graphviz open3d openai pyyaml ruamel.yaml statemachine python-statemachine pydot`
 
 ### IAUV Girona 1000 use case
 1. To ensure compatibility, clone the dependencies at the specified versions. Navigate to the `src` directory of your Catkin workspace and clone all the needed repositories:
 
-   ```bash
-   sudo apt-get install python3-vcstool
-   cd ~/catkin_ws/src
-   git clone https://github.com/cernicarlo/bt_ace.git
-   vcs import < ~/catkin_ws/src/bt_ace/repos.vc
-   ```
+```bash
+cd ~/catkin_ws/src
+git clone https://github.com/cernicarlo/bt_ace.git
+vcs import < ~/catkin_ws/src/bt_ace/repos.vc
+```
 2. Follow the instructions to install stonefish at `~/catkin_ws/src/stonefish/README.md` (previously downloaded with `vcs`) 
 3. Install dependencies
 <!-- TODO: reseolve with this (to be tested in a fresh environment):
@@ -63,8 +66,7 @@ rosdep install --from-paths src --ignore-src -r -y
 ```
  -->
 ```bash
-sudo apt install ros-noetic-interactive-markers
-sudo apt install ros-noetic-ros-numpy
+sudo apt install ros-noetic-interactive-markers ros-noetic-ros-numpy ros-noetic-joint-trajectory-controller ros-noetic-fcl ros-noetic-velocity-controllers ros-noetic-joint-state-controller ros-noetic-joint-state-publisher-gui ros-noetic-octomap-server ros-noetic-depth-image-proc ros-noetic-octomap-rviz-plugins lm-sensors
 ```
 
 <!-- This branch is built to work with [iauv_demo](https://github.com/GitSRealpe/iauv_demo/): git clone this repo in the same `~/catkin_ws/src` and follow the instructions provided by the repo. I used this [commit](https://github.com/GitSRealpe/iauv_demo/commit/4848c8fe560a5b6e492adde968dbb2573105e5b6). PTAL at `other_repo_modifications`
@@ -145,6 +147,28 @@ NB. here action is meant as a single BT
 
 ## Troubleshooting
 
+### Python version
+
+if checking for `python --version` output 2 (like here)
+```bash
+$ python --version
+Python 2.7.18
+
+```
+
+instead of version 3 (like here)
+```bash
+$ python --version
+Python 3.8.10
+
+```
+then, run:
+```bash
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+sudo update-alternatives --config python
+```
+
+### Default
 In case there are some problems, please bear in mind that the latest commit tested is in the branch `stable`. So, please:
 
 ```bash
