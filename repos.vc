@@ -27,12 +27,12 @@ repositories:
   cola2_msgs:
     type: git
     url: https://bitbucket.org/iquarobotics/cola2_msgs.git
-    version: 0c4d20d740aeb408f72e7885fb4b254918a7487a
+    version: master
 
   cola2_stonefish:
     type: git
-    url: https://bitbucket.org/iquarobotics/cola2_stonefish.git
-    version: c7c85e7537247627ccb688f9f6c21688e1f7196e
+    url: git clone https://bitbucket.org/udg_cirs/cola2_stonefish.git
+    version: master
 
   girona1000_description:
     type: git
@@ -47,17 +47,17 @@ repositories:
   stonefish:
     type: git
     url: https://github.com/Michele1996/stonefish.git
-    version: e0de2657b1ef22efca1ab976cbcc9e007ac0231c
+    version: master
 
   stonefish_ros:
     type: git
     url: https://github.com/Michele1996/stonefish_ros.git
-    version: 5755c841e462cd255fdfe6fdac7e52ea7333ae5a
+    version: master
 
   iauv_demo:
     type: git
     url: https://github.com/GitSRealpe/iauv_demo.git
-    version: 4848c8fe560a5b6e492adde968dbb2573105e5b6
+    version: main
 
   BehaviorTree.CPP:
     type: git
