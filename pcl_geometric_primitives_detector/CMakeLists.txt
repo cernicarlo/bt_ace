@@ -36,7 +36,7 @@ add_service_files(
   CheckRelation.srv
   GetActions.srv
   GetTaxonomy.srv
-  QueryFullGraph.Srv
+  QueryFullGraph.srv
 )
 
 
@@ -48,7 +48,6 @@ generate_messages(
 
 # Declare the catkin package
 catkin_package(
-  INCLUDE_DIRS include
   LIBRARIES pcl_geometric_primitives_detector
   CATKIN_DEPENDS sensor_msgs pcl_ros pcl_conversions ros_numpy
 )
@@ -90,7 +89,8 @@ catkin_install_python(PROGRAMS
   scripts/label_obj_pub_mock.py
   scripts/get_actions_mock.py
   scripts/store_pointcloud.py
-  scripts/llm_bt_ros1.py
+  scripts/llm_bt_ros_alpha.py
+  scripts/llm_bt_ros_beta.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

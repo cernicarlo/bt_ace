@@ -28,8 +28,9 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl_geometric_primitives_detector/LabeledObjInfo.h>  
 #include <utility>
-
-
+#include <tuple>
+#include <boost/bind/bind.hpp>
+#include <boost/bind/placeholders.hpp>
 typedef pcl::PointXYZ PointT;
 
 using std::placeholders::_1;
@@ -206,8 +207,8 @@ double pointToConeDistance(const pcl::PointXYZ& point, const pcl::ModelCoefficie
 
 
     // Iteratively fit planes and return the inliers for publishing
-std::pair<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, double> detectPlanes(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud)
-{
+std::tuple<int, boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>>, double> 
+detectPlanes(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud){
     pcl::PointCloud<pcl::PointXYZ>::Ptr remaining_cloud = downsample(cloud);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_planes_cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
     double total_fitness_score = 0.0; // Total fitness score
@@ -277,7 +278,7 @@ std::pair<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, double> detectPlanes(const pcl
         plane_count++;  // Increment the plane counter
     }
 
-    return {colored_planes_cloud, total_fitness_score}; // Return colored planes and total fitness score
+    return {plane_count, colored_planes_cloud, total_fitness_score}; // Return colored planes and total fitness score
 }
 
 
@@ -468,15 +469,21 @@ class PrimitiveDetectionNode
 public:
     PrimitiveDetectionNode(ros::NodeHandle& nh)
     {
-        // Initialize subscriptions and publishers
         for (int i = 0; i < 10; ++i) {
+            // Create topic name dynamically
             std::string topic_name = "/cluster_" + std::to_string(i);
-            ros::Subscriber sub = nh.subscribe(topic_name, 10, 
-                &PrimitiveDetectionNode::pointCloudCallback, this, i);
-            subscriptions_.push_back(sub);
-        }
 
-        planes_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("/planes", 10);
+            // Create the subscriber for each topic using a lambda function
+            ros::Subscriber sub = nh.subscribe<sensor_msgs::PointCloud2>(
+                topic_name, 10, [this, i](const sensor_msgs::PointCloud2::ConstPtr& msg) {
+                    this->pointCloudCallback(msg, i);  // Call your member function with the extra argument
+                }
+            );
+        
+    subscriptions_.push_back(sub);
+  }
+
+	planes_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("/planes", 10);
         spheres_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("/spheres", 10);
         cylinders_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("/cylinders", 10);
         cones_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("/cones", 10);
@@ -498,7 +505,7 @@ public:
         pcl::fromROSMsg(*msg, *cloud);
 
         // Detect primitives
-        auto [planes_cloud, planes_fitness_score, plane_count] = primitive_detector_->detectPlanes(cloud);
+        auto [plane_count, planes_cloud, planes_fitness_score] = primitive_detector_->detectPlanes(cloud);
         auto [spheres_cloud, spheres_fitness_score] = primitive_detector_->detectSpheres(cloud);
         auto [cylinders_cloud, cylinders_fitness_score] = primitive_detector_->detectCylinders(cloud);
         auto [cones_cloud, cones_fitness_score] = primitive_detector_->detectCones(cloud);

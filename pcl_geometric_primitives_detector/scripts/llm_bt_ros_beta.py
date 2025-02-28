@@ -9,14 +9,15 @@ from std_msgs.msg import *
 import re
 import time
 import os
-from cola2_stonefish.srv import QueryFullGraph,GetTaxonomy
-from tf.msg import TFMessage
+from pcl_geometric_primitives_detector.srv import QueryFullGraph,GetTaxonomy
+from tf2_msgs.msg import TFMessage
 from geometry_msgs.msg import TransformStamped
 import json
 import threading
 import importlib
+import roslib
 # Initialize OpenAI API (make sure you have your API key set up)
-openai.api_key = ''
+openai.api_key = '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'
 
 def get_custom_msg_class(msg_type_str):
     try:
@@ -203,7 +204,8 @@ def llm_decision(input_text):
             
             # Save the XML content to a file
             # Carlo cambia il path del file se serve
-            filename = f"{action}.xml"
+            path=roslib.packages.get_pkg_dir("bt_cpp") + "/llm_bt_xml/";
+            filename = path+f"{action}.xml"
             with open(filename, "w", encoding="utf-8") as file:
                 file.write(decision)
             
@@ -249,17 +251,13 @@ class ROS1TopicExplorer:
         
         rospy.loginfo("TF Listener initialized.")
         
-        # Initialize service clients
-        self.cli = rospy.ServiceProxy('query_full_graph', QueryFullGraph)
-        self.cli_taxonomy = rospy.ServiceProxy('get_taxonomy', GetTaxonomy)
         
         # Wait for service availability
-        self.wait_for_service(self.cli, 'query_full_graph')
-        self.wait_for_service(self.cli_taxonomy, 'get_taxonomy')
-
-        self.req = QueryFullGraphRequest()
-        self.req_taxonomy = GetTaxonomyRequest()
-
+        rospy.wait_for_service('/query_full_graph')
+        rospy.wait_for_service('/get_taxonomy')
+        self.cli = rospy.ServiceProxy('/query_full_graph', QueryFullGraph)
+        self.cli_taxonomy = rospy.ServiceProxy('/get_taxonomy', GetTaxonomy)
+    
     def wait_for_service(self, service, service_name):
         """Helper function to wait for service availability."""
         rospy.loginfo(f"Waiting for service {service_name}...")
@@ -391,7 +389,7 @@ class ROS1TopicExplorer:
         """
         print("Calling service")
         try:
-            result = self.cli(self.req)  # Synchronous service call in ROS1
+            result = self.cli()  # Synchronous service call in ROS1
             print("Service call completed.")
             
             if result is not None:
@@ -413,7 +411,7 @@ class ROS1TopicExplorer:
         Converts the response into a structured JSON format.
         """
         try:
-            result = self.cli_taxonomy(self.req_taxonomy)  # Synchronous service call in ROS1
+            result = self.cli_taxonomy()  # Synchronous service call in ROS1
 
             if result is not None:
                 # Convert response into structured JSON
@@ -573,7 +571,7 @@ def read_mission_file(file_path):
 
 # Main function
 def main():
-    rospy.init_node('ros1_topic_explorer', anonymous=True) 
+    #rospy.init_node('ros1_topic_explorer', anonymous=True) 
     ros_topic_exp = ROS1TopicExplorer()
     conversation_history = []
 
@@ -591,7 +589,7 @@ def main():
     print(taxonomy)
         
     conversation_history.append({"role": "system", "content": info})
-    mission_file_path = os.getcwd() + '/src/cola2_stonefish/ace/mission_Alpha.txt'  # Path to the text file
+    mission_file_path = roslib.packages.get_pkg_dir('pcl_geometric_primitives_detector')+'/ace/mission_Beta.txt'  # Path to the text file
     mission_text = read_mission_file(mission_file_path)
     print("Mission Content:\n", mission_text)
     decision = llm_decision(mission_text)
