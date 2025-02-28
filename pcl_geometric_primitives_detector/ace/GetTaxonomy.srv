@@ -1,5 +1,0 @@
----
-string[] object_names
-string[] actions
-uint32[] action_offsets  # Indicates where each object's actions start in the list
-

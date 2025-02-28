@@ -5,8 +5,11 @@ import tkinter as tk
 from tkinter import simpledialog
 import graphviz
 import yaml
-from pcl_geometric_primitives_detector.srv import AddObject, AddAffordance, ExportGraph, CreateGUI, DisplayGraph, CheckRelation, QueryFullGraph, GetTaxonomy
+from pcl_geometric_primitives_detector.srv import AddObject, AddAffordance, ExportGraph, CreateGUI, DisplayGraph, CheckRelation, QueryFullGraph, GetTaxonomy, QueryFullGraphRequest, QueryFullGraphResponse, GetTaxonomyRequest, GetTaxonomyResponse
 from std_srvs.srv import Trigger, TriggerResponse
+import roslib
+
+taxonomy_data=[]
 
 class Graph:
     def __init__(self):
@@ -183,15 +186,17 @@ def handle_export_graph(req, graph):
         return ExportGraphResponse(success=False)
 
     # New handler for querying the full graph
- def handle_query_graph(req, graph, response):
+def handle_query_graph(req, graph):
+        response=QueryFullGraphResponse()
+
+        # Collect the nodes
         response.nodes = list(graph.nodes)
-        
         # Collect the edges as three separate lists (subject, target, action)
         subject_list = []
         target_list = []
         action_list = []
         
-        for edge in self.graph.edges:
+        for edge in graph.edges:
             subject, target, action = edge
             subject_list.append(subject)
             target_list.append(target)
@@ -201,34 +206,36 @@ def handle_export_graph(req, graph):
         response.target = target_list
         response.action = action_list
         
-        return response
+        return QueryFullGraphResponse()
 
-def handle_get_taxonomy(request, graph,response):
-        """
-        Service handler to return taxonomy data.
-        """
-        response.object_names = list(taxonomy_data.keys())
-        response.actions = []
-        response.action_offsets = []
+def handle_get_taxonomy(request, taxonomy):
+    response=GetTaxonomyResponse()
 
-        offset = 0
-        for obj in response.object_names:
-            response.actions.extend(self.taxonomy_data[obj])
-            response.action_offsets.append(offset)
-            offset = len(response.actions)
+    response.object_names=[]
+    response.actions=[]
+    response.action_offsets=[]
 
-        return response   
+    offset=0
+    for object_names, actions in taxonomy.items():
+        response.object_names.append(object_names)
+        response.actions.extend(actions)
+        response.action_offsets.append(offset)
+        offset=len(response.actions)
+
+    print(response.object_names)
+
+    return response
    
-
- def load_taxonomy(self,file_path):
+def load_taxonomy(file_path):
         """
         Load the taxonomy from a YAML file.
         Returns a dictionary with object names as keys and their actions as lists of strings.
         """
         with open(file_path, 'r') as file:
              data = yaml.safe_load(file)
-             self.taxonomy_data = {obj['name']: obj['actions'] for obj in data['objects']}
-             print(self.taxonomy_data)
+             taxonomy_data = {obj['name']: obj['actions'] for obj in data['objects']}
+             print(taxonomy_data)
+        return taxonomy_data
    
     
 def gui_service(graph):
@@ -236,14 +243,15 @@ def gui_service(graph):
     rospy.Service('display_gui', Empty, lambda req: handle_gui_request(req, graph))
     rospy.Service("display_graph", DisplayGraph, lambda req: handle_display_graph(req, graph))
     rospy.Service("query", CheckRelation, lambda req: handle_check_relation(req, graph))
-    rospy.Service("query_full_graph", QueryFullGraph, lambda req: handle_check_relation(req, graph,response))
-    rospy.Service("get_taxonomy", GetTaxonomy, lambda req: handle_check_relation(req, graph,response))
+    rospy.Service("query_full_graph", QueryFullGraph, lambda req: handle_query_graph(req, graph))
+    rospy.Service("get_taxonomy", GetTaxonomy, lambda req: handle_get_taxonomy(req, taxonomy))
     rospy.loginfo("GUI service is ready.")
     rospy.spin()
 
 if __name__ == "__main__":
-    filename = rospy.get_param('/affordance_graph')
-    taxonomy_filename=rospy.get_param('/taxonomy')
+    filename = roslib.packages.get_pkg_dir('pcl_geometric_primitives_detector')+'/ace/affordance_graph.yaml'
+    taxonomy_filename=roslib.packages.get_pkg_dir('pcl_geometric_primitives_detector')+'/ace/primitive_taxonomy.yaml'
+    
     rospy.loginfo("Using filename: %s", filename)
     print("Filename parameter:", filename)
     graph = Graph.read_graph_from_yaml(filename)
