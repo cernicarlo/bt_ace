@@ -94,6 +94,26 @@ source devel/setup.bash
 ```
 
 ## Use Case
+### Dual robot docking
+2 girona1000 (`robotA` and `robotB`) are initialized. They execute BTs as soon as they are put in their respective directories (`llm_bt_xml_a` and `llm_bt_xml_b`). Once executed, the bt in the folder is renamed adding the extention `.executed`.
+
+1. T1
+```bash
+# launch simulation w/ Stonefish, RVIZ and service to plan the path on both robots
+roslaunch bt_cpp scenario_dual.launch
+```
+
+2. T2
+```bash
+# launch executable for both robots that will process BT as soon as they arrive in the folder
+roslaunch bt_cpp bt_llm_a_b.launch
+```
+
+3. Place the `bt_files.xml` in the folders `llm_bt_xml_a` (for `robotA`) and `llm_bt_xml_b`(for `robotB`). In the folder `bt_xml`, you can check the examples `full_mission_a.xml` (for `robotA`) and `full_mission_b.xml` (for `robotB`)
+
+4. When the mission of the robot is over, place an `bt_file.xml` named `last_bt.xml`. You can also place a "dump" xml (check the example `last_bt.xml`)
+
+### Single Girona1000
 WIP for girona1000 use case: the AUV goes to do the survey, it suddenly find an object it was not planned to find, it searches among its possibilities and it detects the bt that can make a turn around the object
 
 T1

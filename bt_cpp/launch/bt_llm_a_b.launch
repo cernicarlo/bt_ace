@@ -1,0 +1,9 @@
+<!-- launch bt llm for all the robots -->
+<launch>
+    <!-- robotA -->
+    <node name="llm_bt_cpp_a_node" pkg="bt_cpp" type="llm_bt_manager_a" output="screen" />
+
+    <!-- robotB -->
+    <node name="llm_bt_cpp_b_node" pkg="bt_cpp" type="llm_bt_manager_b" output="screen" />
+
+</launch>

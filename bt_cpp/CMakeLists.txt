@@ -88,6 +88,14 @@ add_executable(llm_bt_manager src/exec_llm_bt_manager.cpp)
 target_include_directories(llm_bt_manager PRIVATE ${catkin_INCLUDE_DIRS})
 target_link_libraries(llm_bt_manager ${catkin_LIBRARIES} nodes)
 
+add_executable(llm_bt_manager_a src/exec_llm_bt_manager_a.cpp)
+target_include_directories(llm_bt_manager_a PRIVATE ${catkin_INCLUDE_DIRS})
+target_link_libraries(llm_bt_manager_a ${catkin_LIBRARIES} nodes)
+
+add_executable(llm_bt_manager_b src/exec_llm_bt_manager_b.cpp)
+target_include_directories(llm_bt_manager_b PRIVATE ${catkin_INCLUDE_DIRS})
+target_link_libraries(llm_bt_manager_b ${catkin_LIBRARIES} nodes)
+
 # Install the targets of bt_cpp
 install(TARGETS scan_path bt_manager
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
