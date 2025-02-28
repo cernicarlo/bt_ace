@@ -15,7 +15,7 @@ void PathRequest::construction() {
    }
 
    if (!getInput<std::string>("robot", _robot_name)) {
-      throw BT::RuntimeError("missing required input [start]");
+      throw BT::RuntimeError("missing required input [robot]");
    }
    std::string action_client_name =  _robot_name + "/pursuit_controller";
    ROS_INFO("initializing action_client_. action_client_name: %s", action_client_name.c_str());

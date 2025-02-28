@@ -21,6 +21,7 @@
   <build_export_depend>roscpp</build_export_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>pcl_geometric_primitives_detector</build_depend>
+  <build_depend>dual_gironas</build_depend>
   <exec_depend>pcl_geometric_primitives_detector</exec_depend>
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>actionlib</exec_depend>
@@ -28,6 +29,7 @@
   <exec_depend>girona_utils</exec_depend>
   <exec_depend>iauv_motion_planner</exec_depend>
   <exec_depend>roscpp</exec_depend>
+  <exec_depend>dual_gironas</exec_depend>
   <!-- TODO: place these in pcl_geometric_primitives_detector -->
   <exec_depend>interactive_markers</exec_depend>
   <exec_depend>ros_numpy</exec_depend>

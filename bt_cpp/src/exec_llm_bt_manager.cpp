@@ -10,6 +10,7 @@
 #include "bt_cpp/point_cloud_processor.h"
 #include "bt_cpp/follow_path_node.h"
 #include "bt_cpp/path_request_node.h"
+#include "bt_cpp/dock_interact_node.h"
 #include "bt_cpp/is_path_clear_node.h"
 #include "bt_cpp/log_nodes.h"
 #include "bt_cpp/primitive_detection_client.h"
@@ -47,6 +48,8 @@ int main(int argc, char** argv)
       *factory, "PathRequest", nh);
   registerCustomNode<IauvGirona1000Survey::FollowPath>(
       *factory, "FollowPath", nh);
+  registerCustomNode<IauvGirona1000Survey::DockInteract>(
+    *factory, "DockInteract", nh);
   factory->registerNodeType<isPathClear>("isPathClear", "is_path_clear", nh);
   PortsList say_something_ports = { InputPort<std::string>("message") };
   factory->registerSimpleAction("LogSequence", LogSequence, say_something_ports);

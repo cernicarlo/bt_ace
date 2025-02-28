@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   girona_utils
   iauv_motion_planner
+  dual_gironas
   )
 
 
@@ -44,6 +45,7 @@ catkin_package(
   message_runtime
   girona_utils
   iauv_motion_planner
+  dual_gironas
 )
 
 include_directories(
@@ -54,6 +56,7 @@ include_directories(
 # NODES 
 add_library(nodes STATIC
     nodes/bt_manager.cpp
+    nodes/dock_interact_node.cpp
     nodes/follow_path_node.cpp
     nodes/path_request_node.cpp
     nodes/is_path_clear_node.cpp
