@@ -29,6 +29,17 @@ BT::NodeStatus FollowPath::onStart() {
       throw BT::RuntimeError("missing required input [survey_type]");
    }
 
+   if (!getInput<std::string>("robot", _robot_name)) {
+      throw BT::RuntimeError("missing required input [start]");
+   }
+   std::string action_client_name = _robot_name + "/pursuit_controller";
+   ROS_INFO("initializing action_client_");
+   action_client_ =
+      std::make_shared<PursuitClient>(
+         nh_, action_client_name, true);
+   
+   ROS_INFO("initialized action_client_");
+
    std::cout << "Construction of " << name_ << std::endl;
    
    last_idx_waypoint_ = -1;
@@ -42,7 +53,8 @@ BT::NodeStatus FollowPath::onStart() {
 void FollowPath::sendFollowPathGoal() {
    girona_utils::PursuitGoal goal;
     // Wait for the message with a timeout of 1 second
-    boost::shared_ptr<nav_msgs::Path const> path_msg = ros::topic::waitForMessage<nav_msgs::Path>("/iauv_motion_planner/path", nh_, ros::Duration(1.0));
+    std::string server_name = "/" + _robot_name + "/motion_planner/path";
+    boost::shared_ptr<nav_msgs::Path const> path_msg = ros::topic::waitForMessage<nav_msgs::Path>(server_name, nh_, ros::Duration(1.0));
 
     // Check if the message was received (not null)
     if (path_msg) {
@@ -134,17 +146,23 @@ BT::NodeStatus FollowPath::onResult(
 
 BT::NodeStatus FollowPath::tick() {
    const BT::NodeStatus prev_status = status();
-   ros::Duration server_timeout(static_cast<double>(timeout_server_msec_) *
-                                1e-3);
-   bool connected = action_client_->waitForServer(server_timeout);
-   if (!connected) {
-      ROS_WARN("timeout to connect to server (missing server)");
-      return BT::NodeStatus::FAILURE;
-      // return onFailedRequest(MISSING_SERVER);
-   }
 
-   if (prev_status == BT::NodeStatus::IDLE) {
+   if (prev_status == BT::NodeStatus::IDLE && !is_node_started_) {
+      ROS_INFO("onStart()");
       BT::NodeStatus new_status = onStart();
+      ROS_INFO("done initialized action_client_");
+
+
+      ros::Duration server_timeout(static_cast<double>(timeout_server_msec_) *
+                                1e-3);
+      bool connected = action_client_->waitForServer(server_timeout);
+      is_node_started_ = true;
+      if (!connected) {
+         ROS_WARN("follow_path: timeout to connect to server (missing server)");
+         return BT::NodeStatus::FAILURE;
+         // return onFailedRequest(MISSING_SERVER);
+      }
+
       if (new_status == BT::NodeStatus::IDLE) {
          throw BT::LogicError("HelpSeekerNode::onStart() must not return IDLE");
       }

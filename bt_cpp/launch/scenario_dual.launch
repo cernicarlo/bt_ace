@@ -3,19 +3,9 @@
     <include file="$(find dual_gironas)/launch/dual_robotAndDS.launch" />
 
     <!-- Launch the node to make available the planner services -->
-    <include file="$(find iauv_motion_planner)/launch/planner_node.launch" />
+    <include file="$(find iauv_motion_planner)/launch/dual_planner_node.launch" />
 
-    <!-- Launch the node to enable the pose controller for robotA -->
-    <group ns="robotA">
-        <include file="$(find girona_utils)/launch/auv_pose_controller.launch">
-            <arg name="robot" value="robotA" />
-        </include>
-    </group>
+    <!-- Launch the node to make available docking/undocking actions -->
+    <node name="multidocking_node" pkg="dual_gironas" type="multidocking_node.py" output="screen" />
 
-    <!-- Launch the node to enable the pose controller for robotB -->
-    <group ns="robotB">
-        <include file="$(find girona_utils)/launch/auv_pose_controller.launch">
-            <arg name="robot" value="robotB" />
-        </include>
-    </group>
 </launch>

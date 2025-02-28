@@ -14,6 +14,16 @@ void PathRequest::construction() {
       throw BT::RuntimeError("missing required input [start]");
    }
 
+   if (!getInput<std::string>("robot", _robot_name)) {
+      throw BT::RuntimeError("missing required input [start]");
+   }
+   std::string action_client_name =  _robot_name + "/pursuit_controller";
+   ROS_INFO("initializing action_client_. action_client_name: %s", action_client_name.c_str());
+   action_client_ =
+      std::make_shared<PursuitClient>(
+         nh_, action_client_name, true);
+   ROS_INFO("initialized action_client_");
+
    auto is_to_object = getInput<bool>("is_to_object");
    if(!is_to_object)
    {
@@ -135,12 +145,12 @@ BT::NodeStatus PathRequest::onStart() {
    ROS_INFO("[ PathRequest: SEND REQUEST ]. type of path=%s\n",
           _type.c_str());
    
-
-   _service_client = nh_.serviceClient<iauv_motion_planner::GetPath>("/iauv_motion_planner/getPath");
+   std::string service_name = "/" + _robot_name + "/iauv_motion_planner/getPath";
+   _service_client = nh_.serviceClient<iauv_motion_planner::GetPath>(service_name);
 
    // Check if the service is available
    if (!_service_client.waitForExistence(ros::Duration(2.0))) {
-      ROS_ERROR("[ PathRequest ] /iauv_motion_planner/getPath is not available");
+      ROS_ERROR("[ PathRequest ] %s is not available", service_name.c_str());
       return BT::NodeStatus::FAILURE;
    }
 
@@ -238,18 +248,22 @@ BT::NodeStatus PathRequest::onRunning() {
 
 BT::NodeStatus PathRequest::tick() {
    const BT::NodeStatus prev_status = status();
-   ros::Duration server_timeout(static_cast<double>(timeout_server_msec_) *
-                                1e-3);
-   bool connected = action_client_->waitForServer(server_timeout);
 
-   if (!connected) {
-      ROS_WARN("timeout to connect to server (missing server)");
-      return BT::NodeStatus::FAILURE;
-      // return onFailedRequest(MISSING_SERVER);
-   }
-
-   if (prev_status == BT::NodeStatus::IDLE) {
+   if (prev_status == BT::NodeStatus::IDLE && !is_node_started_) {
+      ROS_INFO("onStart..");
       BT::NodeStatus new_status = onStart();
+
+      ros::Duration server_timeout(static_cast<double>(timeout_server_msec_) *
+                                1e-3);
+      bool connected = action_client_->waitForServer(server_timeout);
+      is_node_started_ = true;
+
+      if (!connected) {
+         ROS_WARN("path request: timeout to connect to server (missing server)");
+         return BT::NodeStatus::FAILURE;
+         // return onFailedRequest(MISSING_SERVER);
+      }
+
       if (new_status == BT::NodeStatus::IDLE) {
          throw BT::LogicError("PathRequest::onStart() must not return IDLE");
       }

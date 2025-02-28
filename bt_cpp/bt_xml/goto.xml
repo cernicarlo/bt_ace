@@ -6,11 +6,12 @@
             <LogSequence name="start"    message="[GOTO] mission start" />
             <!-- Main Path -->
             <PathRequest name="main_path" 
-                            type="simple" 
+                            type="simple"
+                            robot="robotA"
                             start="{start}"  w_start="0.707" z_start="-0.707"
                             goal="{goal}" w_end="0.707" z_end="-0.707"
                             is_to_object="false" survey_type="{survey_type}"/>
-            <FollowPath path_follow_is_completed="false" survey_type="{survey_type}"/>
+            <FollowPath robot="robotA" path_follow_is_completed="false" survey_type="{survey_type}"/>
         </Sequence>
     </BehaviorTree>
 </root>

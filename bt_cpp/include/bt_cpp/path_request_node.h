@@ -54,11 +54,9 @@ class PathRequest : public BT::CoroActionNode
        is_object_pose_received_(false), 
        is_request_initialized_(false),
        prev_printed_msg_("empty"),
-       timeout_server_msec_(500) {
-         ROS_INFO("path_request constructor");
-         action_client_ =
-          std::make_shared<PursuitClient>(
-              nh_, "pursuit_controller", true);
+       timeout_server_msec_(500),
+       is_node_started_{false} {
+        ROS_INFO("constructor");
        }
 
     // It is mandatory to define this static method.
@@ -66,6 +64,7 @@ class PathRequest : public BT::CoroActionNode
     {
         return{ 
          BT::InputPort<std::string>("type"),
+         BT::InputPort<std::string>("robot"),
          BT::InputPort<Pose3D>("start"),
          BT::InputPort<Pose3D>("goal"),
          BT::InputPort<bool>("is_to_object"),
@@ -89,6 +88,7 @@ class PathRequest : public BT::CoroActionNode
     BT::NodeStatus tick() override final;
     unsigned timeout_server_msec_;
     std::string _type;
+    std::string _robot_name;
     std::string name_;
     ros::ServiceClient _service_client;
     iauv_motion_planner::GetPathRequest _request;
@@ -99,6 +99,7 @@ class PathRequest : public BT::CoroActionNode
     std::condition_variable object_pose_cv_;
     bool is_object_pose_received_;
     bool is_request_initialized_;
+    bool is_node_started_;
     ros::Subscriber object_pose_sub_;
     std::shared_ptr<PursuitClient> action_client_;
     ros::NodeHandle& nh_;
