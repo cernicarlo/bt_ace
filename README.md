@@ -46,7 +46,7 @@ sudo apt install git python3-pip python3-vcstool python3-tk python3-opencv libus
 * install graphviz (`pip install graphviz`)
 * install open3d (`pip install open3d`)
 * install yaml (`pip install pyyaml`)
-* install openai (`pip install openai`)
+* install openai (`pip install openai==0.28.0`)
 * one command line: `pip install groq graphviz open3d openai pyyaml ruamel.yaml statemachine python-statemachine pydot`
 
 ### IAUV Girona 1000 use case
