@@ -1,6 +1,6 @@
 <launch>
     <!-- Launch the simulation w/ Stonefish and RVIZ -->
-    <include file="$(find iauv_description)/launch/single_robot.launch" />
+    <include file="$(find dual_gironas)/launch/surveyor_interventor_ds.launch" />
 
     <!-- Launch the node to make available the planner services -->
     <include file="$(find iauv_motion_planner)/launch/planner_node.launch" />

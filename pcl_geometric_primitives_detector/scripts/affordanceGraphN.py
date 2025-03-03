@@ -205,8 +205,9 @@ def handle_query_graph(req, graph):
         response.subject = subject_list
         response.target = target_list
         response.action = action_list
+
         
-        return QueryFullGraphResponse()
+        return response
 
 def handle_get_taxonomy(request, taxonomy):
     response=GetTaxonomyResponse()
@@ -222,7 +223,7 @@ def handle_get_taxonomy(request, taxonomy):
         response.action_offsets.append(offset)
         offset=len(response.actions)
 
-    print(response.object_names)
+
 
     return response
    
@@ -234,7 +235,7 @@ def load_taxonomy(file_path):
         with open(file_path, 'r') as file:
              data = yaml.safe_load(file)
              taxonomy_data = {obj['name']: obj['actions'] for obj in data['objects']}
-             print(taxonomy_data)
+             #print(taxonomy_data)
         return taxonomy_data
    
     
@@ -253,7 +254,7 @@ if __name__ == "__main__":
     taxonomy_filename=roslib.packages.get_pkg_dir('pcl_geometric_primitives_detector')+'/ace/primitive_taxonomy.yaml'
     
     rospy.loginfo("Using filename: %s", filename)
-    print("Filename parameter:", filename)
+    #print("Filename parameter:", filename)
     graph = Graph.read_graph_from_yaml(filename)
     taxonomy = load_taxonomy(taxonomy_filename)
     gui_service(graph)

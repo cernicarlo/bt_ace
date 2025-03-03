@@ -64,10 +64,10 @@ class MyOpen3DNode:
     def check_vlc_line_of_sight(self, event=None):
         try:
             # Lookup the transformation for the optical modems
-            self.tf_listener.waitForTransform('world_ned', 'girona1000/vlc_link', rospy.Time(0), rospy.Duration(4.0))
-            (trans1, rot1) = self.tf_listener.lookupTransform('world_ned', 'girona1000/vlc_link', rospy.Time(0))
-            self.tf_listener.waitForTransform('world_ned', 'vlc_station', rospy.Time(0), rospy.Duration(4.0))
-            (trans2, rot2) = self.tf_listener.lookupTransform('world_ned', 'vlc_station', rospy.Time(0))
+            self.tf_listener.waitForTransform('world_ned', 'robotA/vlc_link', rospy.Time(0), rospy.Duration(4.0))
+            (trans1, rot1) = self.tf_listener.lookupTransform('world_ned', 'robotA/vlc_link', rospy.Time(0))
+            self.tf_listener.waitForTransform('world_ned', 'vlc_stationA', rospy.Time(0), rospy.Duration(4.0))
+            (trans2, rot2) = self.tf_listener.lookupTransform('world_ned', 'vlc_stationA', rospy.Time(0))
 
             optical_modem_tf_1 = np.array(trans1)  # Position of luma_girona
             optical_modem_tf_2 = np.array(trans2)  # Position of luma_computer

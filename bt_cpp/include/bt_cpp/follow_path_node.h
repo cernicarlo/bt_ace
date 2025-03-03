@@ -38,7 +38,7 @@ class FollowPath : public BT::CoroActionNode {
         BT::InputPort<std::string>("robot"),
         BT::InputPort<std::string>("survey_type") };
    }
-
+   
    BT::NodeStatus onStart();
    BT::NodeStatus onRunning();
    
@@ -48,7 +48,6 @@ class FollowPath : public BT::CoroActionNode {
        const girona_utils::PursuitResultConstPtr& result);
    void feedbackCallback(const girona_utils::PursuitFeedbackConstPtr& feedback);
    BT::NodeStatus onResult(const girona_utils::PursuitResultConstPtr& res);
-
 private:
   BT::NodeStatus tick() override final;
   unsigned timeout_server_msec_;
@@ -66,6 +65,7 @@ private:
   float radius_;
   std::string _type;
   ros::ServiceClient _service_client;
+  std::string survey_type_str;
 
   std::future<bool> _service_call_future;
   std::mutex object_pose_mutex_;
@@ -74,6 +74,9 @@ private:
   bool is_request_initialized_;
   std::string prev_printed_msg_;
   std::string log_fp_;
+  int path_length;
+  int last_path_actual_waypoint;
+  
 
 };
 

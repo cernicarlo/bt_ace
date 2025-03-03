@@ -4,8 +4,8 @@
         <Sequence name="iauv_girona1000_survey_scan">
             <LogSequence name="start"    message="mission start" />
             <!-- Main Path -->
-            <DockInteract robot="robotA" action="dock"/>
-            <DockInteract robot="robotA" action="undock"/>
+            <!--<DockInteract robot="robotA" action="dock"/>-->
+            <!--<DockInteract robot="robotA" action="undock"/>-->
             <PathRequest name="main_path" 
                             type="scan" 
                             robot="robotA"

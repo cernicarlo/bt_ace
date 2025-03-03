@@ -59,4 +59,9 @@ graph:
   - subject: AUV
     target: Sphere
     action: observe
+  - subject: AUV
+    target: VLC
+    action: has
+
+
 

@@ -1,0 +1,19 @@
+"mission validated"
+Reason: The AUV is equipped with both DepthCamera and Sonar, which allow it to perform surveys in clear or turbid water. Furthermore, the AUV has VLC capabilities for communication with the operator.
+
+
+<root BTCPP_format="4">
+    <BehaviorTree ID="survey_and_communicate">
+        <Sequence name="complete_survey_and_communicate">
+            <LogSequence name="start" message="Survey mission start"/>
+            <PathRequest type="scan" start="-2.5;-2.0;4.0" goal="0.0;3.0;5.5" width="10.0" length="5.0" survey_type="standard"/>
+            <FollowPath path_follow_is_completed="false" survey_type="standard"/>
+            <LogSequence name="survey_complete" message="Survey mission complete"/>
+            <LogSequence name="comm_start" message="[GOTO] mission start"/>
+            <PathRequest name="main_path" type="simple" start="{current_position}" w_start="0.707" z_start="-0.707" goal="{vlc_position}" w_end="0.707" z_end="-0.707" is_to_object="false" survey_type="communication"/>
+            <FollowPath path_follow_is_completed="false" survey_type="communication"/>
+            <ActionNode name="Communicate" action="comm_with_operator"/>
+            <WaitNode name="WaitForOrder" wait_time="indefinite"/> <!-- Replace indefinite with appropriate mechanism -->
+        </Sequence>
+    </BehaviorTree>
+</root>

@@ -1,0 +1,25 @@
+"mission validated"
+Reason: The mission is possible because the AUV has the capability to perform surveys using both the DepthCamera and Sonar, and it has the VLC equipment required to communicate with the operator.
+
+
+<root BTCPP_format="4">
+    <BehaviorTree ID="survey_bt">
+        <Sequence name="iauv_girona1000_survey_scan">
+            <LogSequence name="start" message="survey mission start"/>
+            <PathRequest type="scan" start="-2.5;-2.0;4.0" goal="0.0;3.0;5.5" width="10.0" length="5.0" survey_type="survey"/>
+            <FollowPath path_follow_is_completed="false" survey_type="survey"/>
+        </Sequence>
+    </BehaviorTree>
+</root>
+
+<root BTCPP_format="4">
+    <BehaviorTree ID="vlc_communication_bt">
+        <Sequence name="iauv_girona1000_communicate">
+            <LogSequence name="start" message="VLC communication start"/>
+            <PathRequest name="comms_path" type="simple" start="0.0;0.0;0.0" w_start="0.707" z_start="-0.707" goal="comms_location" w_end="0.707" z_end="-0.707" is_to_object="false" survey_type="VLC"/>
+            <FollowPath path_follow_is_completed="false" survey_type="VLC"/>
+            <ActionNode name="Communicate" action="establish_communication"/>
+            <ActionNode name="WaitForOrder" action="wait_for_operator_order"/>
+        </Sequence>
+    </BehaviorTree>
+</root>

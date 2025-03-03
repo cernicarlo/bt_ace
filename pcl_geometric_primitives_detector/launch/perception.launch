@@ -22,6 +22,6 @@
     <node name="pcd_compressor_node" pkg="pcl_geometric_primitives_detector" type="pcd_compressor.py" output="screen" />
     
     <!-- Run llm_bt_ros1.py -->
-    <node name="llm_bt_node" pkg="pcl_geometric_primitives_detector" type="llm_bt_ros1.py" output="screen" />
+    <node name="llm_bt_node_alpha" pkg="pcl_geometric_primitives_detector" type="llm_bt_ros_alpha.py" output="screen" />
 
 </launch>

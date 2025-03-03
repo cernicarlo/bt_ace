@@ -1,18 +1,53 @@
-<!-- Only scan -->
 <root BTCPP_format="4">
     <BehaviorTree ID="main_bt">
         <Sequence name="iauv_girona1000_survey_scan">
-            <LogSequence name="start"    message="mission start" />
-            <!-- Main Path -->
-            <DockInteract robot="robotA" action="dock"/>
+            <LogSequence name="start" message="mission start" />
+
+            <!-- Dock and Undock Before First Path -->
+	    <!--            <DockInteract robot="robotA" action="dock"/>
             <DockInteract robot="robotA" action="undock"/>
-            <PathRequest name="main_path" 
-                            type="scan" 
-                            robot="robotA"
-                            start="-2.5;-2.0;5.0" goal="0.0;3.0;5.5" is_to_object="false" 
-                            width="10.0" length="5.0" survey_type="{survey_type}"/>
+	    -->
+            <!-- First Path: Scan -->
+           <PathRequest name="scan_path"
+                         robot="robotA"
+                         type="scan"
+                         start="-2.5;-2.0;5.0"
+                         goal="0.0;3.0;5.5"
+                         is_to_object="false"
+                         width="10.0"
+                         length="5.0"
+                         survey_type="{survey_type}"/>
             <FollowPath robot="robotA" path_follow_is_completed="false" survey_type="{survey_type}"/>
-            <DockInteract robot="robotA" action="dock"/>
+
+            <!-- Second Path: Simple Navigation -->
+<!--<PathRequest name="main_path" 
+                            type="simple"
+                            robot="robotA"
+                            start="0.0;3.0;5.5"  w_start="0.707" z_start="-0.707"
+                            goal="3.0 ;3.0; 0.0" w_end="0.707" z_end="-0.707"
+                            is_to_object="false" survey_type="{survey_type}"/>
+            <FollowPath robot="robotA" path_follow_is_completed="false" survey_type="{survey_type}"/>-->
+            <!-- Third Path: Go To VLC Station A -->
+	    <!--<PathRequest name="main_path" 
+                            type="simple"
+                            robot="robotA"
+                            start="0.0;3.0;5.5"  w_start="0.707" z_start="-0.707"
+                            goal="3.125 ;10.42; 6.54" w_end="0.707" z_end="-0.707"
+                            is_to_object="false" survey_type="{survey_type}"/>
+            <FollowPath robot="robotA" path_follow_is_completed="false" survey_type="{survey_type}"/>       
+	    -->
+            <!-- Third Path: Go To VLC Station B -->
+	    <!--<PathRequest name="main_path" 
+                            type="simple"
+                            robot="robotB"
+                            start="0.0;3.0;5.5"  w_start="0.707" z_start="-0.707"
+                            goal="-4.875 ;10.42; 6.54" w_end="0.707" z_end="-0.707"
+                            is_to_object="false" survey_type="{survey_type}"/>
+            <FollowPath robot="robotA" path_follow_is_completed="false" survey_type="{survey_type}"/>     
+	    -->
+            <!-- Dock at the End -->
+	    <!--<DockInteract robot="robotB" action="dock"/>-->
         </Sequence>
     </BehaviorTree>
 </root>
+

@@ -5,7 +5,15 @@
             <LogSequence name="start"    message="mission start" />
             <!-- Main Path -->
             <DockInteract robot="robotB" action="dock"/>
-            <DockInteract robot="robotB" action="undock"/>
+	    <DockInteract robot="robotB" action="undock"/>
+            <!-- Go To Robot A to Communicate-->
+			    <!-- <PathRequest name="main_path" 
+                            type="simple"
+                            robot="robotB"
+                            start="0.0;0.0;0.5"  w_start="0.707" z_start="-0.707"
+                            goal="2.875 ;10.42; 6.54" w_end="0.707" z_end="-0.707"
+                            is_to_object="false" survey_type="{survey_type}"/>
+			    <FollowPath robot="robotA" path_follow_is_completed="false" survey_type="{survey_type}"/>-->
             <PathRequest type="circular"
                          robot="robotB"
                          start="5.0;5.0;4.5"  goal="3.0;5.0;5.5" is_to_object="false" 

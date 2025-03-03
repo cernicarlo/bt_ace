@@ -7,7 +7,7 @@ objects:
   actions:
     - observe
     - manipulate
-- name: sphere
+- name: cube
   actions:
   - observe
   - touch

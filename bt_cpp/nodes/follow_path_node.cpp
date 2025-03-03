@@ -10,7 +10,6 @@ BT::NodeStatus FollowPath::onStart() {
    name_ = "FollowPath";
    log_fp_ = "[FollowPath] : ";
 
-   std::string survey_type_str;
    if (getInput<std::string>("survey_type", survey_type_str)) {
       std::string log = log_fp_ + "Survey type set to ";
       if (survey_type_str == "scan") {
@@ -43,7 +42,8 @@ BT::NodeStatus FollowPath::onStart() {
    std::cout << "Construction of " << name_ << std::endl;
    
    last_idx_waypoint_ = -1;
-
+   path_length=0;
+   last_path_actual_waypoint=0;
    sendFollowPathGoal();
    // sendBtGoal();
    last_print_time_ = std::chrono::steady_clock::now();
@@ -61,6 +61,10 @@ void FollowPath::sendFollowPathGoal() {
         // Dereference the shared pointer and assign the message
         goal.path = *path_msg;
         goal.radius = radius_;
+        
+        path_length=goal.path.poses.size();
+        
+        std::cout << "PATH LENGHT:" << goal.path.poses.size() <<  "  RADIUS" << radius_ << std::endl;
 
         // Send the goal to the action client
         action_client_->sendGoal(
@@ -91,27 +95,42 @@ void FollowPath::feedbackCallback(
 }
 
 
+
+
 BT::NodeStatus FollowPath::onRunning() {
    // if (isTimeOutReached()) {
    //    return BT::NodeStatus::FAILURE;
    // }
    auto action_state = action_client_->getState();
-
+   std::string position_str;
    if (action_state == actionlib::SimpleClientGoalState::PENDING ||
        action_state == actionlib::SimpleClientGoalState::ACTIVE) {
-      
+  std::string state_server =
+          action_state == actionlib::SimpleClientGoalState::PENDING ? "PENDING"
+                                                                    : "ACTIVE";      
       // print only if it reached a new waypoint
       if (last_feedback_.waypoint > last_idx_waypoint_){
-         std::string state_server =
+          state_server =
           action_state == actionlib::SimpleClientGoalState::PENDING ? "PENDING"
                                                                     : "ACTIVE";
-         std::string position_str = std::to_string(last_feedback_.waypoint);
+         position_str = std::to_string(last_feedback_.waypoint);
 
          std::string msg = "[" + name_ + "] : " + state_server +
                            ", waypoint: " + position_str;
+	 std::cout<<"STATE ACTION:" << state_server << std::endl;
          printIfFromLastPrintHavePassedSomeSeconds(msg, 1.0,prev_printed_msg_,last_print_time_);
          last_idx_waypoint_ = last_feedback_.waypoint;
       };
+      
+      position_str = std::to_string(last_feedback_.waypoint);
+      //std::cout<< "WAYPOINT TREE STATE:" << state_server.c_str() << "   " << position_str << std::endl;
+      if((survey_type_str=="simple" || survey_type_str=="circular"  || survey_type_str=="scan")  && position_str==std::to_string(path_length)){
+         std::cout<<"FINISHING BT"<<std::endl;
+          sleep(0.5);
+          action_client_->cancelGoal();
+          sleep(0.5);
+          return BT::NodeStatus::SUCCESS;
+      }
       
       sleep(0.5);
       return BT::NodeStatus::RUNNING;

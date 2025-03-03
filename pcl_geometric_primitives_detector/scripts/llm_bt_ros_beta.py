@@ -17,7 +17,7 @@ import threading
 import importlib
 import roslib
 # Initialize OpenAI API (make sure you have your API key set up)
-openai.api_key = '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'
+openai.api_key = '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'
 
 def get_custom_msg_class(msg_type_str):
     try:
@@ -204,7 +204,7 @@ def llm_decision(input_text):
             
             # Save the XML content to a file
             # Carlo cambia il path del file se serve
-            path=roslib.packages.get_pkg_dir("bt_cpp") + "/llm_bt_xml/";
+            path=roslib.packages.get_pkg_dir("bt_cpp") + "/llm_bt_xml_a/";
             filename = path+f"{action}.xml"
             with open(filename, "w", encoding="utf-8") as file:
                 file.write(decision)
@@ -248,7 +248,8 @@ class ROS1TopicExplorer:
         self.tf_data = {}
         self.subscription_tf = rospy.Subscriber('/tf', TFMessage, self.tf_callback, queue_size=100)
         self.subscription_tf_static = rospy.Subscriber('/tf_static', TFMessage, self.tf_static_callback, queue_size=100)
-        
+        self.timer = rospy.Timer(rospy.Duration(30.0), self.timer_callback) 
+
         rospy.loginfo("TF Listener initialized.")
         
         
@@ -257,6 +258,11 @@ class ROS1TopicExplorer:
         rospy.wait_for_service('/get_taxonomy')
         self.cli = rospy.ServiceProxy('/query_full_graph', QueryFullGraph)
         self.cli_taxonomy = rospy.ServiceProxy('/get_taxonomy', GetTaxonomy)
+
+    def timer_callback(self, event):
+        """Called every 2 seconds to print all transforms"""
+        all_transforms = self.get_all_transforms()
+        rospy.loginfo(f"Current stored transforms: {all_transforms}")
     
     def wait_for_service(self, service, service_name):
         """Helper function to wait for service availability."""
@@ -277,26 +283,31 @@ class ROS1TopicExplorer:
     def store_transform(self, transform, static=False):
         """Stores TF in a dictionary with its position and orientation"""
         frame_name = transform.child_frame_id
-        self.tf_data[frame_name] = {
-            "parent": transform.header.frame_id,
-            "translation": {
-                "x": transform.transform.translation.x,
-                "y": transform.transform.translation.y,
-                "z": transform.transform.translation.z,
-            },
-            "rotation": {
-                "x": transform.transform.rotation.x,
-                "y": transform.transform.rotation.y,
-                "z": transform.transform.rotation.z,
-                "w": transform.transform.rotation.w,
-            },
-            "static": static  # True if from /tf_static
-        }
+        if(("camera" not in frame_name) and("thruster" not in frame_name) and ("pressure" not in frame_name) and ("bravo" not in frame_name) ):
+            self.tf_data[frame_name] = {
+               "parent": transform.header.frame_id,
+               "translation": {
+                   "x": transform.transform.translation.x,
+                   "y": transform.transform.translation.y,
+                   "z": transform.transform.translation.z,
+               },
+               "rotation": {
+                   "x": transform.transform.rotation.x,
+                   "y": transform.transform.rotation.y,
+                   "z": transform.transform.rotation.z,
+                   "w": transform.transform.rotation.w,
+               },
+               "static": static  # True if from /tf_static
+           }
+
 
 
     def get_all_transforms(self):
         """Returns all stored transforms as a dictionary"""
-        return self.tf_data        
+        info = "These are the transformations \n" + json.dumps(self.tf_data)
+        conversation_history.append({"role": "system", "content": info})
+        llm_decision(info)
+
         
     def list_topics(self, max_retries=5, delay=0.5):
         """Ensure all topics are discovered by retrying."""
@@ -323,7 +334,7 @@ class ROS1TopicExplorer:
         """Finds and subscribes to the battery topic."""
         topics = self.list_topics()
         for topic, types in topics:
-            if "simulation_info" in topic.lower():
+            if "robotB/battery_level" in topic.lower():
                 self.battery_topic = topic
                 self.subscribe_to_topic(topic, types[0])  # Subscribe to the topic with the correct message type
                 rospy.loginfo(f"Monitoring battery topic: {topic}")
@@ -387,16 +398,17 @@ class ROS1TopicExplorer:
         """
         This function calls the 'get_full_graph' service and handles the response synchronously.
         """
-        print("Calling service")
+        #print("Calling service")
         try:
             result = self.cli()  # Synchronous service call in ROS1
-            print("Service call completed.")
+            #print("Service call completed.")
             
             if result is not None:
-                print("Graph data received")
+                #print("Graph data received")
+                #print(result.subject, result.target, result.action)
                 graph_data_json = convert_to_json(result.subject, result.target, result.action)
                 # Print or save the JSON as needed
-                print("Graph data in JSON format:")
+                #print("Graph data in JSON format:")
                 return graph_data_json  # Assuming graph_data is in YAML or JSON format
             else:
                 rospy.logerr('Failed to retrieve affordance graph.')
@@ -425,7 +437,7 @@ class ROS1TopicExplorer:
                 taxonomy_json = json.dumps({"objects": taxonomy_data}, indent=2)
 
                 # Print or return JSON as needed
-                print("Taxonomy data in JSON format:")
+                #print("Taxonomy data in JSON format:")
                 return taxonomy_json
             else:
                 rospy.logerr('Failed to retrieve taxonomy data.')
@@ -552,14 +564,14 @@ def update_graph_periodically(ros_topic_exp, conversation_history):
     while not rospy.is_shutdown():
         graph = ros_topic_exp.get_full_graph()
         taxonomy = ros_topic_exp.get_taxonomy()
-        
+        #print("GRAFO RICEVUTO", graph) 
         info = (
             f"This is the actual knowledge graph of the robot: {graph}\n"
             f"Here is the taxonomy: {taxonomy}\n"
         )
-        
         conversation_history.append({"role": "system", "content": info})
-        rospy.sleep(10)  # Update every 10 seconds, adjust as needed
+        llm_decision(info)
+        rospy.sleep(20)  # Update every 10 seconds, adjust as needed
 
 def read_mission_file(file_path):
     """Reads the mission file as a string."""
@@ -586,20 +598,17 @@ def main():
         f"This is the actual knowledge graph of the robot: {graph}\n"
         f"Here is the taxonomy: {taxonomy}\n"
     )
-    print(taxonomy)
-        
     conversation_history.append({"role": "system", "content": info})
-    mission_file_path = roslib.packages.get_pkg_dir('pcl_geometric_primitives_detector')+'/ace/mission_Beta.txt'  # Path to the text file
-    mission_text = read_mission_file(mission_file_path)
-    print("Mission Content:\n", mission_text)
-    decision = llm_decision(mission_text)
-    
+    llm_decision(info)
+    if((len(graph)>0) and (len(taxonomy) > 0)):
+          mission_file_path = roslib.packages.get_pkg_dir('pcl_geometric_primitives_detector')+'/ace/mission_Beta.txt'  # Path to the text file
+          mission_text = read_mission_file(mission_file_path)
+          print("Mission Content:\n", mission_text)
+          decision = llm_decision(mission_text)
+
+
     while not rospy.is_shutdown():
         # Fetch TF data and append to conversation history
-        tfs = ros_topic_exp.get_all_transforms()
-        info = "These are the tfs\n" + json.dumps(tfs)
-        conversation_history.append({"role": "system", "content": info})
-        decision = llm_decision("Where is the bluerov? What's his orientation?")
         rospy.sleep(1)  
 
     rospy.spin() 
