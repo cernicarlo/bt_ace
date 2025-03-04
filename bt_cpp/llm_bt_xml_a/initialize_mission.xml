@@ -10,7 +10,7 @@
             <DockInteract robot="robotA" action="undock"/>
             <SubTree ID="ASurvey" /> 
             <SubTree ID="ALookCone" />
-            <!-- <SubTree ID="AVlcCommA" /> -->
+            <SubTree ID="AVlcCommA" />
             <!--- If robotB is docked, uncomment next line -->
             <!--- <DockInteract robot="robotB" action="undock"/> -->
             <SubTree ID="BVlcCommA" />
