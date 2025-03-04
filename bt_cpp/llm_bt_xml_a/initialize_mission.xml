@@ -1,14 +1,16 @@
 <root BTCPP_format="4" main_tree_to_execute = "MainBt">
   <include path="bt_xml_primitive/a_scan.xml" />
+  <include path="bt_xml_primitive/a_look_at_cone.xml" />
   <include path="bt_xml_primitive/a_vlc_comm_a.xml" />
   <include path="bt_xml_primitive/b_vlc_comm_a.xml" />
 
     <BehaviorTree ID="MainBt">
         <Sequence name="survey_and_communicate">
             <!--- If robotA is docked, uncomment next line -->
-            <!--- <DockInteract robot="robotA" action="undock"/> -->
-            <SubTree ID="ASurvey" />
-            <SubTree ID="AVlcCommA" />
+            <DockInteract robot="robotA" action="undock"/>
+            <SubTree ID="ASurvey" /> 
+            <SubTree ID="ALookCone" />
+            <!-- <SubTree ID="AVlcCommA" /> -->
             <!--- If robotB is docked, uncomment next line -->
             <!--- <DockInteract robot="robotB" action="undock"/> -->
             <SubTree ID="BVlcCommA" />
