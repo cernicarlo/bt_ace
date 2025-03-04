@@ -7,7 +7,7 @@
     <BehaviorTree ID="MainBt">
         <Sequence name="survey_and_communicate">
             <!--- If robotA is docked, uncomment next line -->
-            <DockInteract robot="robotA" action="undock"/>
+            <!--- <DockInteract robot="robotA" action="undock"/> -->
             <SubTree ID="ASurvey" /> 
             <SubTree ID="ALookCone" />
             <SubTree ID="AVlcCommA" />
