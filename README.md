@@ -112,9 +112,18 @@ roslaunch bt_cpp scenario_dual.launch
 roslaunch bt_cpp bt_llm_a_b.launch
 ```
 
-4. Place the `bt_files.xml` in the folders `llm_bt_xml_a` (for `robotA`) and `llm_bt_xml_b`(for `robotB`). In the folder `bt_xml`, you can check the examples `full_mission_a.xml` (for `robotA`) and `full_mission_b.xml` (for `robotB`) or `initialize_mission.xml` for seeing how to use the `bt_xml_primitive`s.
+4. In `llm_bt_xml_a/initialize_mission.xml`, there are the nodes `WaitEvent` that returns true when the topic showed in the port `event_topic` publishes a message `std_msgs/Bool "data: true"`, otherwise, it keeps ticking. For example, when it goes to the node
+```xml
+<WaitEvent event_topic="/a_comm_human" />
+```
+you can make it return success publishing from terminal:
+```bash
+rostopic pub /a_comm_human std_msgs/Bool "data: true"
+```
 
-5. When the mission of the robot is over, place an `bt_file.xml` named `last_bt.xml`. You can also place a "dump" xml (check the example `last_bt.xml`)
+5. Place the `bt_files.xml` in the folders `llm_bt_xml_a` (for `robotA`) and `llm_bt_xml_b`(for `robotB`). In the folder `bt_xml`, you can check the examples `full_mission_a.xml` (for `robotA`) and `full_mission_b.xml` (for `robotB`) or `initialize_mission.xml` for seeing how to use the `bt_xml_primitive`s.
+
+6. When the mission of the robot is over, place an `bt_file.xml` named `last_bt.xml`. You can also place a "dump" xml (check the example `last_bt.xml`)
 
 ### Single Girona1000
 WIP for girona1000 use case: the AUV goes to do the survey, it suddenly find an object it was not planned to find, it searches among its possibilities and it detects the bt that can make a turn around the object

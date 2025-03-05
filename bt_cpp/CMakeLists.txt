@@ -63,6 +63,7 @@ add_library(nodes STATIC
     nodes/primitive_detection_client.cpp
     nodes/object_sorter.cpp
     nodes/mission_utils.cpp
+    nodes/wait_event_node.cpp
     )
 
 target_include_directories(nodes PRIVATE 

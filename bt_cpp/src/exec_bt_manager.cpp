@@ -5,6 +5,7 @@
 #include "bt_cpp/path_request_node.h"
 #include "bt_cpp/is_path_clear_node.h"
 #include "bt_cpp/log_nodes.h"
+#include "bt_cpp/wait_event_node.h"
 #include "bt_cpp/primitive_detection_client.h"
 #include "bt_cpp/object_sorter.h"
 #include "bt_cpp/utils.h"
@@ -73,6 +74,8 @@ int main(int argc, char** argv)
   registerCustomNode<IauvGirona1000Survey::FollowPath>(
       *factory, "FollowPath", nh);
   factory->registerNodeType<isPathClear>("isPathClear", "is_path_clear", nh);
+  registerCustomNode<IauvGirona1000Survey::WaitEvent>(
+    *factory, "WaitEvent", nh);
   PortsList say_something_ports = { InputPort<std::string>("message") };
   factory->registerSimpleAction("LogSequence", LogSequence, say_something_ports);
   factory->registerSimpleAction("LogFallback", LogFallback, say_something_ports);

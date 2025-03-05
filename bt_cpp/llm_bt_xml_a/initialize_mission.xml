@@ -3,17 +3,27 @@
   <include path="bt_xml_primitive/a_look_at_cone.xml" />
   <include path="bt_xml_primitive/a_vlc_comm_a.xml" />
   <include path="bt_xml_primitive/b_vlc_comm_a.xml" />
+  <include path="bt_xml_primitive/a_vlc_comm_b.xml" />
 
     <BehaviorTree ID="MainBt">
         <Sequence name="survey_and_communicate">
             <!--- If robotA is docked, uncomment next line -->
             <!--- <DockInteract robot="robotA" action="undock"/> -->
-            <SubTree ID="ASurvey" /> 
+            <SubTree ID="ASurvey" />
             <SubTree ID="ALookCone" />
+            <DockInteract robot="robotA" action="dock"/>
+            <DockInteract robot="robotA" action="undock"/>
             <SubTree ID="AVlcCommA" />
+            <LogSequence name="start"    message="VLC a_comm_human start" />
+            <WaitEvent event_topic="/a_comm_human" />
+            <LogSequence name="start"    message="VLC a_comm_human done" />
             <!--- If robotB is docked, uncomment next line -->
             <!--- <DockInteract robot="robotB" action="undock"/> -->
+            <DockInteract robot="robotB" action="dock"/>
+            <DockInteract robot="robotB" action="undock"/>
             <SubTree ID="BVlcCommA" />
+            <WaitEvent event_topic="/a_comm_b" />
+            <SubTree ID="AVlcCommB" />
         </Sequence>
     </BehaviorTree>
 </root>

@@ -7,8 +7,8 @@
             <PathRequest name="comms_path" 
                             robot="robotA"
                             type="simple" 
-                            start="2.5;18;4.5" w_start="0.6755" z_start="0.7372"
-                            goal="3.125;18.42;6.54" w_end="0.6755" z_end="-0.7372"
+                            start="3.125;10.42;10.54" w_start="0.707" z_start="-0.707"
+                            goal="3.125;12.70;13.2" w_end="0.6755" z_end="-0.7372"
                             is_to_object="false" survey_type="{survey_type}"/>
             <FollowPath robot="robotA" path_follow_is_completed="false" survey_type="{survey_type}"/>
         </Sequence>
