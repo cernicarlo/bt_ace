@@ -124,7 +124,7 @@ BT::NodeStatus FollowPath::onRunning() {
       
       position_str = std::to_string(last_feedback_.waypoint);
       //std::cout<< "WAYPOINT TREE STATE:" << state_server.c_str() << "   " << position_str << std::endl;
-      if((survey_type_str=="circular"  || survey_type_str=="scan")  && position_str==std::to_string(path_length)){
+      if((survey_type_str=="simple" || survey_type_str=="circular"  || survey_type_str=="scan")  && position_str==std::to_string(path_length)){
          std::cout<<"FINISHING BT"<<std::endl;
           sleep(0.5);
           action_client_->cancelGoal();
