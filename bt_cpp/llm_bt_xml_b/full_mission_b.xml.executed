@@ -7,18 +7,24 @@
             <DockInteract robot="robotB" action="dock"/>
 	    <DockInteract robot="robotB" action="undock"/>
             <!-- Go To Robot A to Communicate-->
-			    <!-- <PathRequest name="main_path" 
+            
+            <!-- Path to go to the position to communicate with A -->
+	    <PathRequest name="main_path" 
                             type="simple"
-                            robot="robotB"
-                            start="0.0;0.0;0.5"  w_start="0.707" z_start="-0.707"
-                            goal="2.875 ;10.42; 6.54" w_end="0.707" z_end="-0.707"
+                            robot="robotA"
+                            start="-4.875 ;12.42; 13.54" w_start="0.707" z_start="-0.707"
+                            goal="-4.875;11.42; 13.54" w_end="0.707" z_end="1.414"
                             is_to_object="false" survey_type="{survey_type}"/>
-			    <FollowPath robot="robotA" path_follow_is_completed="false" survey_type="{survey_type}"/>-->
+            <FollowPath robot="robotA" path_follow_is_completed="false" survey_type="{survey_type}"/>  
+
+<!--- Need wait node  put a trigger on a topic like received string "comm received from A" from topic "/robot_A_B_comm,  same should be for A. instead of waiting for time, wait for "comm received from B" and even when talking with the human from the topic /robot_A_operator received "comm received from operator" --> 
+
             <PathRequest type="circular"
                          robot="robotB"
                          start="5.0;5.0;4.5"  goal="3.0;5.0;5.5" is_to_object="false" 
                          radius="2.0" survey_type="{survey_type}"/>
             <FollowPath robot="robotB" path_follow_is_completed="false" survey_type="{survey_type}"/>
+
             <DockInteract robot="robotB" action="dock"/>
         </Sequence>
     </BehaviorTree>

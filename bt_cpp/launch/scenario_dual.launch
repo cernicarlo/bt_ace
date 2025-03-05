@@ -5,6 +5,9 @@
     <!-- Launch the node to make available the planner services -->
     <include file="$(find iauv_motion_planner)/launch/dual_planner_node.launch" />
 
+    <!-- Launch the node to use the depth_camera point_cloud processing -->
+    <include file="$(find iauv_description)/launch/utils/robot_A_depth_cam.launch"/>
+
     <!-- Launch the node to make available docking/undocking actions -->
     <node name="multidocking_node" pkg="dual_gironas" type="multidocking_node.py" output="screen" />
 

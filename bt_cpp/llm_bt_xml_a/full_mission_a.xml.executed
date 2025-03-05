@@ -8,7 +8,7 @@
             <DockInteract robot="robotA" action="undock"/>
 	    -->
             <!-- First Path: Scan -->
-           <PathRequest name="scan_path"
+           <!--<PathRequest name="scan_path"
                          robot="robotA"
                          type="scan"
                          start="-2.5;-2.0;5.0"
@@ -17,7 +17,7 @@
                          width="10.0"
                          length="5.0"
                          survey_type="{survey_type}"/>
-            <FollowPath robot="robotA" path_follow_is_completed="false" survey_type="{survey_type}"/>
+            <FollowPath robot="robotA" path_follow_is_completed="false" survey_type="{survey_type}"/>-->
 
             <!-- Second Path: Simple Navigation -->
 <!--<PathRequest name="main_path" 
@@ -32,7 +32,7 @@
                             type="simple"
                             robot="robotA"
                             start="0.0;3.0;5.5"  w_start="0.707" z_start="-0.707"
-                            goal="3.125 ;10.42; 6.54" w_end="0.707" z_end="-0.707"
+                            goal="3.125 ;10.42; 13.54" w_end="0.707" z_end="-0.707"
                             is_to_object="false" survey_type="{survey_type}"/>
             <FollowPath robot="robotA" path_follow_is_completed="false" survey_type="{survey_type}"/>       
 	    -->
@@ -45,8 +45,17 @@
                             is_to_object="false" survey_type="{survey_type}"/>
             <FollowPath robot="robotA" path_follow_is_completed="false" survey_type="{survey_type}"/>     
 	    -->
+         
+            <!-- Path to go to the position to communicate with B -->
+	    <PathRequest name="main_path" 
+                            type="simple"
+                            robot="robotA"
+                            start="3.125 ;12.42; 13.54" w_start="0.707" z_start="-0.707"
+                            goal="3.125 ;11.42; 13.54" w_end="0.707" z_end="0.0"
+                            is_to_object="false" survey_type="{survey_type}"/>
+            <FollowPath robot="robotA" path_follow_is_completed="false" survey_type="{survey_type}"/>    
             <!-- Dock at the End -->
-	    <!--<DockInteract robot="robotB" action="dock"/>-->
+		    <!--<DockInteract robot="robotA" action="dock"/>-->
         </Sequence>
     </BehaviorTree>
 </root>
