@@ -7,197 +7,192 @@
 namespace IauvGirona1000Survey {
 
 BT::NodeStatus FollowPath::onStart() {
-   name_ = "FollowPath";
-   log_fp_ = "[FollowPath] : ";
+  name_ = "FollowPath";
+  log_fp_ = "[FollowPath] : ";
 
-   if (getInput<std::string>("survey_type", survey_type_str)) {
-      std::string log = log_fp_ + "Survey type set to ";
-      if (survey_type_str == "scan") {
-         survey_type_ = SCAN;
-         ROS_INFO("%s", (log + "SCAN").c_str());
-      } else if (survey_type_str == "circular") {
-         survey_type_ = CIRCULAR;
-         ROS_INFO("%s", (log + "CIRCULAR").c_str());
-      } else if (survey_type_str == "simple") {
-         survey_type_ = SIMPLE;
-         ROS_INFO("%s", (log + "SIMPLE").c_str());
-      }  else {
-         throw BT::RuntimeError("Invalid survey type");
-      }
-   } else {
-      throw BT::RuntimeError("missing required input [survey_type]");
-   }
+  if (getInput<std::string>("survey_type", survey_type_str)) {
+    std::string log = log_fp_ + "Survey type set to ";
+    if (survey_type_str == "scan") {
+      survey_type_ = SCAN;
+      ROS_INFO("%s", (log + "SCAN").c_str());
+    } else if (survey_type_str == "circular") {
+      survey_type_ = CIRCULAR;
+      ROS_INFO("%s", (log + "CIRCULAR").c_str());
+    } else if (survey_type_str == "simple") {
+      survey_type_ = SIMPLE;
+      ROS_INFO("%s", (log + "SIMPLE").c_str());
+    } else {
+      throw BT::RuntimeError("Invalid survey type");
+    }
+  } else {
+    throw BT::RuntimeError("missing required input [survey_type]");
+  }
 
-   if (!getInput<std::string>("robot", _robot_name)) {
-      throw BT::RuntimeError("missing required input [robot]");
-   }
-   std::string action_client_name = _robot_name + "/pursuit_controller";
-   ROS_INFO("initializing action_client_");
-   action_client_ =
-      std::make_shared<PursuitClient>(
-         nh_, action_client_name, true);
-   
-   ROS_INFO("initialized action_client_");
+  if (!getInput<std::string>("robot", _robot_name)) {
+    throw BT::RuntimeError("missing required input [robot]");
+  }
+  std::string action_client_name = _robot_name + "/pursuit_controller";
+  ROS_INFO("initializing action_client_");
+  action_client_ =
+      std::make_shared<PursuitClient>(nh_, action_client_name, true);
 
-   std::cout << "Construction of " << name_ << std::endl;
-   
-   last_idx_waypoint_ = -1;
-   path_length=0;
-   last_path_actual_waypoint=0;
-   sendFollowPathGoal();
-   // sendBtGoal();
-   last_print_time_ = std::chrono::steady_clock::now();
-   return BT::NodeStatus::RUNNING;
+  ROS_INFO("initialized action_client_");
+
+  std::cout << "Construction of " << name_ << std::endl;
+
+  last_idx_waypoint_ = -1;
+  path_length = 0;
+  last_path_actual_waypoint = 0;
+  sendFollowPathGoal();
+  // sendBtGoal();
+  last_print_time_ = std::chrono::steady_clock::now();
+  return BT::NodeStatus::RUNNING;
 }
 
 void FollowPath::sendFollowPathGoal() {
-   girona_utils::PursuitGoal goal;
-    // Wait for the message with a timeout of 1 second
-    std::string server_name = "/" + _robot_name + "/motion_planner/path";
-    boost::shared_ptr<nav_msgs::Path const> path_msg = ros::topic::waitForMessage<nav_msgs::Path>(server_name, nh_, ros::Duration(1.0));
+  girona_utils::PursuitGoal goal;
+  // Wait for the message with a timeout of 1 second
+  std::string server_name = "/" + _robot_name + "/motion_planner/path";
+  boost::shared_ptr<nav_msgs::Path const> path_msg =
+      ros::topic::waitForMessage<nav_msgs::Path>(server_name, nh_,
+                                                 ros::Duration(1.0));
 
-    // Check if the message was received (not null)
-    if (path_msg) {
-        // Dereference the shared pointer and assign the message
-        goal.path = *path_msg;
-        goal.radius = radius_;
-        
-        path_length=goal.path.poses.size();
-        
-        std::cout << "PATH LENGHT:" << goal.path.poses.size() <<  "  RADIUS" << radius_ << std::endl;
+  // Check if the message was received (not null)
+  if (path_msg) {
+    // Dereference the shared pointer and assign the message
+    goal.path = *path_msg;
+    goal.radius = radius_;
 
-        // Send the goal to the action client
-        action_client_->sendGoal(
-            goal, boost::bind(&FollowPath::minimalDoneCallback, this, _1, _2),
-            PursuitClient::SimpleActiveCallback(),
-            boost::bind(&FollowPath::feedbackCallback, this, _1)
-        );
-    } else {
-        ROS_WARN("No path message received within the timeout.");
-    }
+    path_length = goal.path.poses.size();
+
+    std::cout << "PATH LENGHT:" << goal.path.poses.size() << "  RADIUS"
+              << radius_ << std::endl;
+
+    // Send the goal to the action client
+    action_client_->sendGoal(
+        goal, boost::bind(&FollowPath::minimalDoneCallback, this, _1, _2),
+        PursuitClient::SimpleActiveCallback(),
+        boost::bind(&FollowPath::feedbackCallback, this, _1));
+  } else {
+    ROS_WARN("No path message received within the timeout.");
+  }
 }
 
-
 void FollowPath::minimalDoneCallback(
-    const actionlib::SimpleClientGoalState& state,
-    const girona_utils::PursuitResultConstPtr& result) {
-   //  const bt_policy::BtResultConstPtr& result) {
-   
-   std::cout << log_fp_ << name_ << ": Result from server: "
-             << (result->success ? "Success" : "Failure")
-             << " with state: " << state.toString() << std::endl;
+    const actionlib::SimpleClientGoalState &state,
+    const girona_utils::PursuitResultConstPtr &result) {
+  //  const bt_policy::BtResultConstPtr& result) {
+
+  std::cout << log_fp_ << name_ << ": Result from server: "
+            << (result->success ? "Success" : "Failure")
+            << " with state: " << state.toString() << std::endl;
 }
 
 void FollowPath::feedbackCallback(
-   const girona_utils::PursuitFeedbackConstPtr& feedback) {
-   //  const bt_policy::BtFeedbackConstPtr& feedback) {
-   last_feedback_ = *feedback;
+    const girona_utils::PursuitFeedbackConstPtr &feedback) {
+  //  const bt_policy::BtFeedbackConstPtr& feedback) {
+  last_feedback_ = *feedback;
 }
-
-
-
 
 BT::NodeStatus FollowPath::onRunning() {
-   // if (isTimeOutReached()) {
-   //    return BT::NodeStatus::FAILURE;
-   // }
-   auto action_state = action_client_->getState();
-   std::string position_str;
-   if (action_state == actionlib::SimpleClientGoalState::PENDING ||
-       action_state == actionlib::SimpleClientGoalState::ACTIVE) {
-  std::string state_server =
-          action_state == actionlib::SimpleClientGoalState::PENDING ? "PENDING"
-                                                                    : "ACTIVE";      
-      // print only if it reached a new waypoint
-      if (last_feedback_.waypoint > last_idx_waypoint_){
-          state_server =
-          action_state == actionlib::SimpleClientGoalState::PENDING ? "PENDING"
-                                                                    : "ACTIVE";
-         position_str = std::to_string(last_feedback_.waypoint);
-
-         std::string msg = "[" + name_ + "] : " + state_server +
-                           ", waypoint: " + position_str;
-	 std::cout<<"STATE ACTION:" << state_server << std::endl;
-         printIfFromLastPrintHavePassedSomeSeconds(msg, 1.0,prev_printed_msg_,last_print_time_);
-         last_idx_waypoint_ = last_feedback_.waypoint;
-      };
-      
+  // if (isTimeOutReached()) {
+  //    return BT::NodeStatus::FAILURE;
+  // }
+  auto action_state = action_client_->getState();
+  std::string position_str;
+  if (action_state == actionlib::SimpleClientGoalState::PENDING ||
+      action_state == actionlib::SimpleClientGoalState::ACTIVE) {
+    std::string state_server =
+        action_state == actionlib::SimpleClientGoalState::PENDING ? "PENDING"
+                                                                  : "ACTIVE";
+    // print only if it reached a new waypoint
+    if (last_feedback_.waypoint > last_idx_waypoint_) {
+      state_server = action_state == actionlib::SimpleClientGoalState::PENDING
+                         ? "PENDING"
+                         : "ACTIVE";
       position_str = std::to_string(last_feedback_.waypoint);
-      //std::cout<< "WAYPOINT TREE STATE:" << state_server.c_str() << "   " << position_str << std::endl;
-      if((survey_type_str=="simple" || survey_type_str=="circular"  || survey_type_str=="scan")  && position_str==std::to_string(path_length)){
-         std::cout<<"FINISHING BT"<<std::endl;
-          sleep(0.5);
-          action_client_->cancelGoal();
-          sleep(0.5);
-          return BT::NodeStatus::SUCCESS;
-      }
-      
+
+      std::string msg =
+          "[" + name_ + "] : " + state_server + ", waypoint: " + position_str;
+      std::cout << "STATE ACTION:" << state_server << std::endl;
+      printIfFromLastPrintHavePassedSomeSeconds(msg, 1.0, prev_printed_msg_,
+                                                last_print_time_);
+      last_idx_waypoint_ = last_feedback_.waypoint;
+    };
+
+    position_str = std::to_string(last_feedback_.waypoint);
+    // std::cout<< "WAYPOINT TREE STATE:" << state_server.c_str() << "   " <<
+    // position_str << std::endl;
+    if ((survey_type_str == "simple" || survey_type_str == "circular" ||
+         survey_type_str == "scan") &&
+        position_str == std::to_string(path_length)) {
+      std::cout << "FINISHING BT" << std::endl;
       sleep(0.5);
-      return BT::NodeStatus::RUNNING;
-   } else if (action_state == actionlib::SimpleClientGoalState::SUCCEEDED) {
-      return onResult(action_client_->getResult());
-   } else if (action_state == actionlib::SimpleClientGoalState::ABORTED) {
-      std::cout << "[" << name_ << ": ABORTED_BY_SERVER"
-                << std::endl;
-      return BT::NodeStatus::FAILURE;
-   } else if (action_state == actionlib::SimpleClientGoalState::REJECTED) {
-      std::cout << "[" << name_ << ": REJECTED_BY_SERVER"
-                << std::endl;
-      return BT::NodeStatus::FAILURE;
-   } else {
-      // FIXME: is there any other valid state we should consider?
-      throw std::logic_error("Unexpected state in RosActionNode::tick()");
-   }
+      action_client_->cancelGoal();
+      sleep(0.5);
+      return BT::NodeStatus::SUCCESS;
+    }
+
+    sleep(0.5);
+    return BT::NodeStatus::RUNNING;
+  } else if (action_state == actionlib::SimpleClientGoalState::SUCCEEDED) {
+    return onResult(action_client_->getResult());
+  } else if (action_state == actionlib::SimpleClientGoalState::ABORTED) {
+    std::cout << "[" << name_ << ": ABORTED_BY_SERVER" << std::endl;
+    return BT::NodeStatus::FAILURE;
+  } else if (action_state == actionlib::SimpleClientGoalState::REJECTED) {
+    std::cout << "[" << name_ << ": REJECTED_BY_SERVER" << std::endl;
+    return BT::NodeStatus::FAILURE;
+  } else {
+    // FIXME: is there any other valid state we should consider?
+    throw std::logic_error("Unexpected state in RosActionNode::tick()");
+  }
 }
 
-BT::NodeStatus FollowPath::onResult(
-    const girona_utils::PursuitResultConstPtr& res) {
-   //  const bt_policy::BtResultConstPtr& res) {
+BT::NodeStatus
+FollowPath::onResult(const girona_utils::PursuitResultConstPtr &res) {
+  //  const bt_policy::BtResultConstPtr& res) {
 
-   if (!res->success) {
-      ros::spinOnce();
+  if (!res->success) {
+    ros::spinOnce();
 
-      return BT::NodeStatus::FAILURE;
-   };
-   return BT::NodeStatus::SUCCESS;
+    return BT::NodeStatus::FAILURE;
+  };
+  return BT::NodeStatus::SUCCESS;
 }
-
 
 BT::NodeStatus FollowPath::tick() {
-   const BT::NodeStatus prev_status = status();
+  const BT::NodeStatus prev_status = status();
 
-   if (prev_status == BT::NodeStatus::IDLE && !is_node_started_) {
-      ROS_INFO("onStart()");
-      BT::NodeStatus new_status = onStart();
-      ROS_INFO("done initialized action_client_");
+  if (prev_status == BT::NodeStatus::IDLE && !is_node_started_) {
+    ROS_INFO("onStart()");
+    BT::NodeStatus new_status = onStart();
+    ROS_INFO("done initialized action_client_");
 
+    ros::Duration server_timeout(static_cast<double>(timeout_server_msec_) *
+                                 1e-3);
+    bool connected = action_client_->waitForServer(server_timeout);
+    is_node_started_ = true;
+    if (!connected) {
+      ROS_WARN("follow_path: timeout to connect to server (missing server)");
+      return BT::NodeStatus::FAILURE;
+      // return onFailedRequest(MISSING_SERVER);
+    }
 
-      ros::Duration server_timeout(static_cast<double>(timeout_server_msec_) *
-                                1e-3);
-      bool connected = action_client_->waitForServer(server_timeout);
-      is_node_started_ = true;
-      if (!connected) {
-         ROS_WARN("follow_path: timeout to connect to server (missing server)");
-         return BT::NodeStatus::FAILURE;
-         // return onFailedRequest(MISSING_SERVER);
-      }
+    if (new_status == BT::NodeStatus::IDLE) {
+      throw BT::LogicError("HelpSeekerNode::onStart() must not return IDLE");
+    }
+    return new_status;
+  }
 
-      if (new_status == BT::NodeStatus::IDLE) {
-         throw BT::LogicError("HelpSeekerNode::onStart() must not return IDLE");
-      }
-      return new_status;
-   }
-
-   if (prev_status == BT::NodeStatus::RUNNING) {
-      BT::NodeStatus new_status = onRunning();
-      if (new_status == BT::NodeStatus::IDLE) {
-         throw BT::LogicError(
-             "HelpSeekerNode::onRunning() must not return IDLE");
-      }
-      return new_status;
-   }
-   return prev_status;
+  if (prev_status == BT::NodeStatus::RUNNING) {
+    BT::NodeStatus new_status = onRunning();
+    if (new_status == BT::NodeStatus::IDLE) {
+      throw BT::LogicError("HelpSeekerNode::onRunning() must not return IDLE");
+    }
+    return new_status;
+  }
+  return prev_status;
 }
 
-
-}
+} // namespace IauvGirona1000Survey
